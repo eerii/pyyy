@@ -1,20 +1,31 @@
+// Implementación dun string variable facendo uso do vector dinámico
+// É unha especificación que permite todos os metodos vec_
+// Tamén engade as funcións específicas str_ para facilitar o traballo con
+// strings e o caracter de terminación \0
+
 #pragma once
 
 #include "tvec.h"
 
 // Un string é simplemente un vector de caracteres
-#define Str Vec(char)
+// Este typedef é importante xa que permite ter un tipo concreto que especificar
+// nos parámetros das funcións
+typedef Vec(char) Str;
 
 // Engade un caracter ó final do string, preservando o caracter de terminación
-//      @param S: String no que engadir
-//      @param C: Caracter a engadir
-#define str_push(S, C) vec_ins(S, S.len - 2, C)
+//      @param s: String no que engadir
+//      @param c: Caracter a engadir
+static inline void str_push(Str* s, char c) { vec_ins((*s), s->len - 2, c); }
 
 // Xunta dous strings correctamente
-//      @param S: String no que engadir
-//      @param A: String a engadir
-#define str_append(S, A)                                                       \
-    do {                                                                       \
-        vec_pop(S);                                                            \
-        vec_append(S, A);                                                      \
-    } while (0)
+//      @param s: String no que engadir
+//      @param a: String a engadir
+static inline void str_append(Str* s, const char* a) {
+    vec_pop((*s));
+    vec_append((*s), a);
+}
+
+// Crea un Str dende un literal en linea
+//      @param l: Literal string
+#define str(l)                                                                 \
+    (Str) { .data = (l), .len = (sizeof(l) / sizeof(l[0])) }

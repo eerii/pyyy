@@ -1,54 +1,44 @@
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "thash.h"
 
-u32 hash(Key key, u32 capacidade);
-
-bool necesita_redimensionar(TablaHash* tabla);
-
-TablaHash* redimensionar(TablaHash* tabla);
-
-Nodo* add_nodo(Key key, Value value) {
-    if (key == NULL) {
-        err("%s\n", "a chave é nula");
-        return NULL;
+// Función hash de 64 bits
+//       @param key: Chave a hashear
+u64 hash(HashKey key) {
+    u64 h = 0x100;
+    for (u64 i = 0; i < key.len; i++) {
+        h ^= key.data[i];
+        h *= 1111111111111111111u;
     }
-
-    if (strlen(key) > MAX_LEN) {
-        err("%s\n", "a chave excede a lonxitude máxima");
-        return NULL;
-    }
-
-    Nodo* nodo = malloc(sizeof(Nodo));
-    if (nodo == NULL) {
-        err("%s\n", "non se puido alocar memoria");
-        return NULL;
-    }
-    nodo->sig = NULL;
-
-    strcpy(nodo->key, key);
-    nodo->value = value;
-
-    return nodo;
+    return h;
 }
 
-bool del_nodo(Nodo** nodo, Key key);
-
-void limpar(Nodo** cabeza) {
-    Nodo* n = *cabeza;
-    Nodo* nn;
-
-    while (n != NULL) {
-        nn = n;
-        n = nn->sig;
-        free(n);
-        log("%s\n", "eliminando");
-    }
-
-    *cabeza = NULL;
+// Compara duas chaves
+//       @param a: Chave 1
+//       @param b: Chave 2
+bool equals(HashKey a, HashKey b) {
+    return a.len == b.len && !memcmp(a.data, b.data, a.len);
 }
 
-Value valor(Nodo* nodo, Key key);
+// Modifica ou inserta unha chave no hashmap
+HashValue* hash_ins(HashTree** m, HashKey key, Arena* a) {
+    // Xeramos un hash a partir da chave indicada
+    // Usamos dous bits da chave hash para elexir unha das catro ramas
+    // En cada nivel, dous bits son shifteados (trie of hash bits)
+    for (u64 h = hash(key); *m; h <<= 2) {
+        // Se atopa o elemento, devolve o valor
+        if (equals(key, (*m)->key)) {
+            return &(*m)->value;
+        }
+        // Se non, continua buscando
+        m = &(*m)->child[h >> 62];
+    }
+
+    // Se non se proporciona unha arena e non se atopa un elemento, devolve NULL
+    if (!a) {
+        return NULL;
+    }
+
+    // Crea un novo hashmap usando a arena e asigna o valor da chave
+    *m = new (a, HashTree, 1);
+    (*m)->key = key;
+    return &(*m)->value;
+}

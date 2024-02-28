@@ -1,4 +1,19 @@
+// Implementación dun vector dinámico xenérico
+// Utiliza macros para permitir calqueira tipo de dato
+// Funcións e nomes baseados na implementación Vec de rust
+// Pode utilizarse como array estático sen reservar memoria dinámica
+//
+// O uso de macros pode incrementar o tamaño do binario, pero para a nosa
+// aplicación non debería de ser moi preocupante. Tampouco debería de ter maior
+// impacto no tempo de execución
+//
+// Os do / while están para garantizar o correcto funcionamento das macros cando
+// se utilizan seguidas de punto e coma, semellantes a unha función convencional
+
 #pragma once
+
+#include <stdlib.h>
+#include <string.h>
 
 #include "../definicions.h"
 
@@ -6,6 +21,9 @@
 #define FACTOR_CRECEMENTO_VEC(V) (V.cap < 8192 ? V.cap * 2 : V.cap + 8192)
 
 // Vector dinámico
+// É recomendable facer un typedef to tipo que se vaia a utilizar para que o
+// compilador entenda que múltiples instancias son do mesmo tipo e poder
+// utilizalo como parámetro en funcións convencionais
 #define Vec(T)                                                                 \
     struct {                                                                   \
         u32 len;                                                               \
@@ -93,7 +111,6 @@
         memcpy(&V.data[V.len], A, len * sizeof(V.data[0]));                    \
         V.len += len;                                                          \
     } while (0)
-
 
 // Obtén o último elemento do vector e o elimina
 // Se non ten elementos, o comportamento non é definido
