@@ -2,7 +2,6 @@
 // Utiliza unha arena de memoria e shifting da función hash para
 // crear e buscar nunha árbore con n=4
 // Só implementa insertar, non fai falta borrar nada da tabla de símbolos
-// e fai moito máis eficiente a implementación ca arena (non recolocación)
 // Baseado en https://en.wikipedia.org/wiki/Hash_trie
 // Referencias:
 //      - https://nrk.neocities.org/articles/hash-trees-and-tries
@@ -18,7 +17,7 @@
 //      Nota: nesta caso non compensa facelo xenérico coma o vector xa que
 //      só vamos a utilizar esta estructura para a táboa de símbolos
 typedef Str HashKey;
-typedef i32 HashValue;
+typedef u32 HashValue;
 
 typedef struct HashTree HashTree;
 struct HashTree {

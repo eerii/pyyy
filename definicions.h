@@ -78,13 +78,6 @@
 
 #define is_compatible(x, T) _Generic((x), T: 1, default: 0)
 
-// ··········
-// Constantes
-// ··········
-
-#define MAX_LEN                                                                \
-    256 // TODO: Eliminar la restricción de tamaño (strings variables)
-
 // ·····
 // Tipos
 // ·····
@@ -98,5 +91,3 @@
 #define u16 uint16_t
 #define u32 uint32_t
 #define u64 uint64_t
-
-#define uptr uintptr_t

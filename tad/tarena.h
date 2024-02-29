@@ -1,6 +1,7 @@
 // Implementación dun alocador baseado en arenas de memoria
 // Isto é útil para controlar exactamente como se asigna a memoria no programa
 // Vai reservando páxinas de memoria contigua conforme sexan necesarias
+// Poden marcarse bloques coma eliminados onde se colocarán "tumbas" que poderán ser reutilizadas
 
 #pragma once
 
@@ -11,18 +12,30 @@
 
 #include "../definicions.h"
 
+// TODO: Mover estos dous parametros a init para facela configurable
+//          Permitir subarenas?
+//          Poden funcionar coma un push inverso (en plan vanse asignando dende o final)
+//          Deben de quitarse en orde de stack (a última primeiro)
+//          Permite crecer na arena principal, permite crecer na subarena (dentro do límite), permite engadir novas arenas
+
 // Tamaño e número máximo de páxinas
-#define CHUNK ((u64)1<<24) // 16mb
+#define CHUNK ((u64)1<<20) // 1mb
+#ifndef MAX_BLOCKS
 #define MAX_BLOCKS ((u64)1<<10) // 16gb*
+#endif
 // NOTA: Pode configurarse moito máis alto, xa que só reservamos direccións de
 // memoria virtuais, das que temos máis de 100tb a nosa disposición
 // Por suposto, isto estará limitado cando se vaian creando páxinas pola
 // memoria real do dispositivo
 
-// Puntero tumba (para rexións eliminadas)
+// Punteiro tumba (para rexións eliminadas)
+// É básicamente unha lista vinculada, e non é o máis eficiente de percorrer
+// Sen embargo, para o noso caso non é moi significativo, xa que case non vamos
+// a eliminar obxectos. A táboa de símbolos non borra nada e vamos a ter poucos
+// vectores dinámicos, polo que tampouco ten sentido facer algo máis sofisticado
 typedef struct Tumba Tumba;
 struct Tumba {
-    void* sig;
+    Tumba* sig;
     u64 tam;
 };
 
@@ -90,6 +103,7 @@ static inline void* arena_push(Arena* a, u64 n) {
             t->tam -= n;
             
             // Comprobamos se queda espazo suficiente para mover a tumba
+            // Se non, simplemente aceptamos ese espazo como perdido
             Tumba* tn = t->sig;
             if (t->tam >= sizeof(Tumba)) {
                 tn = (Tumba*)((u8*)t + n);
@@ -166,7 +180,7 @@ static inline void arena_del(Arena* a, void* p, u64 n) {
     }
 
     // Percorre as tumbas existentes e engade a nova ó final
-    // TODO: Comprobar que non hai outra tumba nese lugar
+    // TODO: Comprobar que non hai outra tumba nese lugar (e mezclar as existentes)
     Tumba* it = a->eliminados;
     while (true) {
         if (it->sig == NULL) {

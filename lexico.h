@@ -2,4 +2,4 @@
 
 #include "entrada.h"
 
-i32 seguinte_lexico(Arquivo* a);
+u32 seguinte_lexico(Arquivo* a);

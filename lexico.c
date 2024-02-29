@@ -24,9 +24,17 @@ void procesar_token(char* buf, int* i) {
     }
 }
 
-i32 seguinte_lexico(Arquivo* a) {
-    i32 c;
-    i32 i = 0;
+u32 seguinte_lexico(Arquivo* a) {
+    // TODO: Mover buf a str/vec
+
+    // TODO: Funcións de expresións regulares
+    //      - Identificador alfanumérico
+    //      - Número
+    //      - Operadores ...
+    //      Mirar se podo usar regex en c
+
+    /*u32 c;
+    u32 i = 0;
     char buf[MAX_LEN];
 
     while (true) {
@@ -47,7 +55,7 @@ i32 seguinte_lexico(Arquivo* a) {
             continue;
         }
 
-        // Comprobar comentario de bloque (TODO: esto no es un comentario)
+        // Comprobar comentario de bloque (TODO: esto non e un comentario)
         if (c == '"' && buf[i - 1] == '"' && buf[i - 2] == '"') {
             a->comentario_bloque = !a->comentario_bloque;
             c = ' ';
@@ -59,7 +67,7 @@ i32 seguinte_lexico(Arquivo* a) {
             if (c == '"') {
                 buf[i++] = c;
             } else {
-                i32 j = i;
+                u32 j = i;
                 while (buf[j - 1] == '"') {
                     buf[j-- - 1] = '\0';
                 }
@@ -75,5 +83,7 @@ i32 seguinte_lexico(Arquivo* a) {
         if (e_separador(c)) {
             procesar_token(buf, &i);
         }
-    }
+    }*/
+
+    return 0;
 }

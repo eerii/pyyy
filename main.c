@@ -1,28 +1,16 @@
-#include "entrada.h"
-#include "lexico.h"
-#include "tad/tarena.h"
-#include "tad/thash.h"
-#include "tad/tstr.h"
-#include "tad/tvec.h"
-
 // https://docs.python.org/3/reference/lexical_analysis.html
 
 // Arquivo de definicións
-//      - Todas as palabras reservadas
-//      - Identificador
-//      - Operadores de máis dun caracter?
 // Táboa de símbolos
-//      - Hashmap / arbol binario con clave nome, dato identificador
 // Sistema de entrada
 // Xestión de errores
 
-// Separar tokenizer? Tipo crear función que divida unha liña en palabras
-
-//      - Liñas físicas vs liñas lóxicas (poden ser varias físicas)
-//      - Poden unirse liñas explícitamente / ou implicitamente (dentro de
-//      parénteses, brackets ou corchetes)
-//      - As liñas lóxicas levan un token NEWLINE ó final
-//      - As liñas en blanco son ignoradas
+// Liñas físicas vs liñas lóxicas (poden ser varias físicas, emiten NEWLINE)
+// Poden unirse liñas explícitamente / ou implicitamente (dentro de parénteses)
+// As liñas en blanco son ignoradas
+// Incluír INDENT / DEDENT
+//      Aquí necesito facer scopes? Igual si que hai que eliminar da TS
+//      Podo usar subarenas?
 
 // En el main tenemos 3 fases
 // - Inicialización (estructuras de datos como la tabla de simbolos (crear
@@ -30,7 +18,12 @@
 // - Ejecución (vamos pidiendo el siguiente componente léxico hasta el final)
 // - Finalización (liberar toda la memoria)
 
-// TODO: Eliminar do hashmap?
+#include "entrada.h"
+#include "lexico.h"
+#include "tad/tarena.h"
+#include "tad/thash.h"
+#include "tad/tstr.h"
+#include "tad/tvec.h"
 
 i32 main() {
     Arena a;
