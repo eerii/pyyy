@@ -3,6 +3,7 @@
 #include "tad/tarena.h"
 #include "tad/thash.h"
 #include "tad/tstr.h"
+#include "tad/tvec.h"
 
 // https://docs.python.org/3/reference/lexical_analysis.html
 
@@ -15,7 +16,6 @@
 // Sistema de entrada
 // Xestión de errores
 
-// Revisar macros e C17 para aliviar o traballo
 // Separar tokenizer? Tipo crear función que divida unha liña en palabras
 
 //      - Liñas físicas vs liñas lóxicas (poden ser varias físicas)
@@ -30,7 +30,6 @@
 // - Ejecución (vamos pidiendo el siguiente componente léxico hasta el final)
 // - Finalización (liberar toda la memoria)
 
-// TODO: Crecer arena
 // TODO: Eliminar do hashmap?
 
 i32 main() {
@@ -44,9 +43,27 @@ i32 main() {
     *hash_ins(&m, str("d"), &a) = 20;
     log("%d\n", *hash_ins(&m, str("c"), 0));
 
+    void* p = hash_ins(&m, str("c"), &a);
+    arena_del_struct(&a, p, HashTree); // Esto non é seguro para o hashmap
+    p = hash_ins(&m, str("b"), &a);
+    arena_del_struct(&a, p, HashTree);
+
+    Tumba* t = a.eliminados;
+    while(t != NULL) {
+        log("tumba %p, %lu\n", t, t->tam);
+        t = t->sig;
+    }
+
+    *hash_ins(&m, str("e"), &a) = 30;
+    *hash_ins(&m, str("f"), &a) = 45;
+
     log("tam: %ld, fin: %p\n", a.actual - a.inicio, a.fin);
 
     arena_free(&a);
+
+    Str s;
+    vec_init_from(s, "hey");
+    printf("%s\n", s.data);
 
     return 0;
 

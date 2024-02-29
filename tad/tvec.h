@@ -37,6 +37,11 @@
         typeof(T)* data;                                                       \
     }
 
+// Conta os elementos dun array a engadir a un vector dinámico
+//      @param V: Vector no que se vai engadir
+//      @param X: Array a contar
+#define vec_countof(V, X) (sizeof(X) / sizeof(typeof(V.data[0])))
+
 // Inicializa dende un array preexistente
 // Esta solución *non* reserva memoria dinámica (malloc)
 // ata que o array se redimensiona
@@ -45,7 +50,7 @@
 #define vec_init_from(V, X)                                                    \
     do {                                                                       \
         V.data = (typeof(V.data))&(X);                                         \
-        V.len = sizeof(X) / sizeof(typeof(V.data[0]));                         \
+        V.len = vec_countof(V, X);                                             \
         V.cap = 0;                                                             \
     } while (0)
 
@@ -71,12 +76,12 @@
     do {                                                                       \
         if (V.cap == 0) {                                                      \
             typeof(V.data) tmp = V.data;                                       \
-            V.data = malloc(N * sizeof *V.data);                               \
-            memcpy(V.data, tmp, V.len * sizeof *V.data);                       \
+            V.data = malloc(N * sizeof(*V.data));                              \
+            memcpy(V.data, tmp, V.len * sizeof(*V.data));                      \
             V.cap = N;                                                         \
         }                                                                      \
         if (N > V.cap) {                                                       \
-            V.data = realloc(V.data, N * sizeof *V.data);                      \
+            V.data = realloc(V.data, N * sizeof(*V.data));                     \
             V.cap = N;                                                         \
         }                                                                      \
     } while (0)
@@ -112,7 +117,7 @@
 //      @param X: Array a engadir
 #define vec_append(V, X)                                                       \
     do {                                                                       \
-        u32 len = sizeof(X) / sizeof(V.data[0]);                               \
+        u32 len = vec_countof(V, X);                                           \
         vec_reserve(V, V.len + len);                                           \
         memcpy(&V.data[V.len], X, len * sizeof(V.data[0]));                    \
         V.len += len;                                                          \
@@ -150,7 +155,7 @@
         } else if (I < V.len) {                                                \
             ++V.len;                                                           \
             memmove(&V.data[I + 1], &V.data[I],                                \
-                    (V.len - (I - 1)) * sizeof *V.data);                       \
+                    (V.len - (I - 1)) * sizeof(*V.data));                      \
             V.data[I] = X;                                                     \
         }                                                                      \
     } while (0)
@@ -163,7 +168,8 @@
         vec_make_dyn(V);                                                       \
         if (I < V.len) {                                                       \
             --V.len;                                                           \
-            memmove(&V.data[I], &V.data[I + 1], (V.len - I) * sizeof *V.data); \
+            memmove(&V.data[I], &V.data[I + 1],                                \
+                    (V.len - I) * sizeof(*V.data));                            \
         }                                                                      \
     } while (0)
 
