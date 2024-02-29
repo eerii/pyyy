@@ -10,12 +10,18 @@
 // Os do / while están para garantizar o correcto funcionamento das macros cando
 // se utilizan seguidas de punto e coma, semellantes a unha función convencional
 
+// TODO: Mover implementación a arena
+//      - Pensar cómo facer a recolocación e aproveitar espazos
+//      - Tamén en cómo definir a arena para non ter que pasala como parámetro
+//      - Quizás facer isto en string só?
+
 #pragma once
 
 #include <stdlib.h>
 #include <string.h>
 
 #include "../definicions.h"
+#include "tarena.h"
 
 #define RESERVA_POR_DEFECTO_VEC 4
 #define FACTOR_CRECEMENTO_VEC(V) (V.cap < 8192 ? V.cap * 2 : V.cap + 8192)
@@ -35,11 +41,11 @@
 // Esta solución *non* reserva memoria dinámica (malloc)
 // ata que o array se redimensiona
 //      @param V: Vector a inicializar
-//      @param A: Array de elementos co que inicializalo
-#define vec_init_from(V, A)                                                    \
+//      @param X: Array de elementos co que inicializalo
+#define vec_init_from(V, X)                                                    \
     do {                                                                       \
-        V.data = (typeof(V.data))&(A);                                         \
-        V.len = sizeof(A) / sizeof(typeof(V.data[0]));                         \
+        V.data = (typeof(V.data))&(X);                                         \
+        V.len = sizeof(X) / sizeof(typeof(V.data[0]));                         \
         V.cap = 0;                                                             \
     } while (0)
 
@@ -53,7 +59,7 @@
         V.cap = N;                                                             \
     } while (0)
 
-// Inicialización por defecto (reserva `RESERVE_DEFAULT` elementos)
+// Inicialización por defecto (reserva `RESERVA_POR_DEFECTO_VEC` elementos)
 //      @param V: Vector a inicializar
 #define vec_init(V) vec_init_res(V, RESERVA_POR_DEFECTO_VEC)
 
@@ -103,12 +109,12 @@
 
 // Engade outro array ó final do vector
 //      @param V: Vector no que engadir
-//      @param A: Array a engadir
-#define vec_append(V, A)                                                       \
+//      @param X: Array a engadir
+#define vec_append(V, X)                                                       \
     do {                                                                       \
-        u32 len = sizeof(A) / sizeof(V.data[0]);                               \
+        u32 len = sizeof(X) / sizeof(V.data[0]);                               \
         vec_reserve(V, V.len + len);                                           \
-        memcpy(&V.data[V.len], A, len * sizeof(V.data[0]));                    \
+        memcpy(&V.data[V.len], X, len * sizeof(V.data[0]));                    \
         V.len += len;                                                          \
     } while (0)
 

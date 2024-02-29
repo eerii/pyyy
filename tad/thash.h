@@ -1,6 +1,8 @@
 // Implementación dunha tabla hash con árbores trie
 // Utiliza unha arena de memoria e shifting da función hash para
-// crear e buscar nunha árbore con n=4o
+// crear e buscar nunha árbore con n=4
+// Só implementa insertar, non fai falta borrar nada da tabla de símbolos
+// e fai moito máis eficiente a implementación ca arena (non recolocación)
 // Baseado en https://en.wikipedia.org/wiki/Hash_trie
 // Referencias:
 //      - https://nrk.neocities.org/articles/hash-trees-and-tries

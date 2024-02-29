@@ -38,7 +38,7 @@ HashValue* hash_ins(HashTree** m, HashKey key, Arena* a) {
     }
 
     // Crea un novo hashmap usando a arena e asigna o valor da chave
-    *m = new (a, HashTree, 1);
+    *m = arena_push_struct(a, HashTree);
     (*m)->key = key;
     return &(*m)->value;
 }

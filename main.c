@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include "entrada.h"
 #include "lexico.h"
 #include "tad/tarena.h"
@@ -37,11 +35,7 @@
 
 i32 main() {
     Arena a;
-    arena_init(&a, CHUNK, 0);
-     
-    log("arena - inicio: %p, fin: %p, tam: %dmb\n", a.inicio, a.fin, CHUNK>>20);
-
-    u8* i = a.inicio;
+    arena_init(&a);
 
     HashTree* m = NULL;
     *hash_ins(&m, str("a"), &a) = 10;
@@ -50,7 +44,9 @@ i32 main() {
     *hash_ins(&m, str("d"), &a) = 20;
     log("%d\n", *hash_ins(&m, str("c"), 0));
 
-    log("tam: %ld\n", a.inicio - i);
+    log("tam: %ld, fin: %p\n", a.actual - a.inicio, a.fin);
+
+    arena_free(&a);
 
     return 0;
 
