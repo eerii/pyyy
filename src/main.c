@@ -28,11 +28,28 @@ Arena arena;
 i32 main() {
     arena_init(&arena);
 
-    Fragmento afn = afn_init(regex_afn("a"));
-    printf("%c: %b\n", 'a', afn_step(&afn, 'a'));
-    printf("%c: %b\n", 'a', afn_step(&afn, 'a'));
-    printf("%c: %b\n", 'b', afn_step(&afn, 'b'));
-    printf("%c: %b\n", 'a', afn_step(&afn, 'a'));
+    VecEstado v;
+    vec_init(v);
+
+    AFN aa = afn_atomic('a');
+    AFN bb = afn_atomic('b');
+    AFN afn = afn_and(&aa, &bb);
+    Estado* e = afn.inicio;
+
+    const char* s = "ccaab";
+    for (u32 i = 0; i < strlen(s); ++i) {
+        afn_delta(e, s[i], &v);
+        for (u32 j = 0; j < v.len; ++j) {
+            printf("%p,", v.data[j]);
+        }
+        printf("\n");
+        if (v.len > 0) {
+            e = v.data[0]; // TODO: Las dos ramas
+            vec_clear(v);
+        }
+        printf("AFN: %p %d-%d\n", e, e->trans[0], e->trans[1]); 
+    }
+    printf("Aceptado: %s\n\n", e == afn.fin ? "true" : "false");
 
     Arquivo* a = abrir_arquivo("docs/wilcoxon.py");
     if (a == NULL) {
