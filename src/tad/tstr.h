@@ -20,12 +20,13 @@ typedef Vec(char) Str;
 static inline void str_push(Str* s, char c) { vec_ins((*s), s->len - 2, c); }
 
 // Xunta dous strings correctamente
-//      @param s: String no que engadir
-//      @param a: String a engadir
-static inline void str_append(Str* s, const char* a) {
-    vec_pop((*s));
-    vec_append((*s), a);
-}
+//      @param S: String no que engadir
+//      @param X: String a engadir
+#define str_append(S, X)                                                       \
+    do {                                                                       \
+        vec_pop(S);                                                            \
+        vec_append(S, X);                                                      \
+    } while (0)
 
 // Crea un Str dende un literal en linea
 //      @param l: Literal string

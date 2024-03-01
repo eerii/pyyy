@@ -18,9 +18,9 @@
 // - Ejecución (vamos pidiendo el siguiente componente léxico hasta el final)
 // - Finalización (liberar toda la memoria)
 
-#include "tad/tarena.h"
 #include "entrada.h"
 #include "lexico.h"
+#include "tad/tarena.h"
 
 // Definición da arena global
 Arena arena;
@@ -28,7 +28,7 @@ Arena arena;
 i32 main() {
     arena_init(&arena);
 
-    Arquivo* a = abrir_arquivo("wilcoxon.py");
+    Arquivo* a = abrir_arquivo("docs/wilcoxon.py");
     if (a == NULL) {
         return 1;
     }
