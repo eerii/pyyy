@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "tvec.h"
+#include "vec.h"
 
 // Un string é simplemente un vector de caracteres
 // Este typedef é importante xa que permite ter un tipo concreto que especificar

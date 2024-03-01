@@ -12,9 +12,8 @@
 
 #pragma once
 
-#include "../definicions.h"
-#include "tarena.h"
-#include "tstr.h"
+#include "arena.h"
+#include "str.h"
 
 // Tipos do hashmap
 //      Nota: nesta caso non compensa facelo xenérico coma o vector xa que

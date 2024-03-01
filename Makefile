@@ -1,6 +1,7 @@
 CFLAGS = -Wall -std=c2x
 TARGET = practica_01
-SRC = $(wildcard src/*.c) $(wildcard src/tad/*.c)
+DIRS = src src/tipos src/estados
+SRC = $(foreach d, $(DIRS), $(wildcard $(d)/*.c))
 INCLUDE = src
 DST = bin
 

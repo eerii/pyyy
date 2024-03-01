@@ -17,10 +17,8 @@
 #pragma once
 
 #include <stdlib.h>
-#include <string.h>
 
-#include "../definicions.h"
-#include "tarena.h"
+#include "arena.h"
 
 #define RESERVA_POR_DEFECTO_VEC 4
 #define FACTOR_CRECEMENTO_VEC(V) (V.cap < 8192 ? V.cap * 2 : V.cap + 8192)

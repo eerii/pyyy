@@ -1,5 +1,5 @@
 #include "entrada.h"
-#include "tad/tarena.h"
+#include "tipos/arena.h"
 
 Arquivo* abrir_arquivo(const char* nome) {
     FILE* file = fopen(nome, "r");

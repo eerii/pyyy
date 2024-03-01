@@ -1,6 +1,5 @@
 #include "lexico.h"
-#include "entrada.h"
-#include "tad/tstr.h"
+#include "tipos/str.h"
 
 u32 seguinte_lexico(Arquivo* a) {
     // TODO: Mover buf a str/vec

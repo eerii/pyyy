@@ -18,14 +18,22 @@
 // - Ejecución (vamos pidiendo el siguiente componente léxico hasta el final)
 // - Finalización (liberar toda la memoria)
 
-#include "entrada.h"
 #include "lexico.h"
-#include "tad/tarena.h"
+#include "tipos/arena.h"
+
+#include "estados/afd.h"
 
 // Definición da arena global
 Arena arena;
 
 i32 main() {
+    AFD hola;
+    hola.test = 0;
+
+    return 0;
+
+    // ---
+
     arena_init(&arena);
 
     Arquivo* a = abrir_arquivo("docs/wilcoxon.py");

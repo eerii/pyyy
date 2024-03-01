@@ -15,8 +15,12 @@
         - [ ] comentario de encoding
     - [ ] liñas en branco
 - [ ] análise léxico
+    - [ ] palabras clave
     - [ ] identificadores
-    - [ ] números
     - [ ] operadores
+    - [ ] literals
+        - [ ] números
+        - [ ] strings
+    - [ ] caracteres especiais
 - [ ] mellorar logging
 - [ ] macros varádicas (pasar arena en vec?)
