@@ -1,9 +1,41 @@
+#include <ctype.h>
+
 #include "lexico.h"
 #include "tipos/str.h"
 
-u32 seguinte_lexico(Arquivo* a) {
-    // TODO: Mover buf a str/vec
+// Función de proba
+// Detecta a palabra "for"
+i32 estado = 0;
+void detectar_for(char c) {
+    switch (estado) {
+    case 0:
+        if (c == 'f') {
+            estado = 1;
+            return;
+        }
+        break;
+    case 1:
+        if (c == 'o') {
+            estado = 2;
+            return;
+        }
+        break;
+    case 2:
+        if (c == 'r') {
+            estado = 3;
+            return;
+        }
+        break;
+    case 3:
+        if (!isalnum(c)) {
+            estado = 4;
+            return;
+        }
+    }
+    estado = 0;
+}
 
+u32 seguinte_lexico(Arquivo* a) {
     // TODO: Funcións de expresións regulares
     //      - Identificador alfanumérico
     //      - Número
@@ -11,6 +43,7 @@ u32 seguinte_lexico(Arquivo* a) {
     //      Mirar se podo usar regex en c
 
     i32 c;
+    u32 l = 0;
     static Str buf;
     if (buf.cap == 0) {
         vec_init_res(buf, 128);
@@ -25,17 +58,7 @@ u32 seguinte_lexico(Arquivo* a) {
             return c;
         }
 
-        // Comprobar fin de liña
-        if (c == '\n' || c == '\t') {
-            vec_push(buf, '\0');
-            log("%s", buf.data);
-            vec_clear(buf);
-        }
-    }
-
-    /*
-        // Comprobar comentario de liña
-        // TODO: Comentario de encoding
+        // Comentarios de liña
         if (c == '\n' || c == '\t') {
             a->comentario_linha = false;
         }
@@ -44,27 +67,18 @@ u32 seguinte_lexico(Arquivo* a) {
             continue;
         }
 
-        // Comprobar comentario de bloque (TODO: esto non e un comentario)
-        if (c == '"' && buf[i - 1] == '"' && buf[i - 2] == '"') {
-            a->comentario_bloque = !a->comentario_bloque;
-            c = ' ';
-            buf[i - 2] = '\0';
-            i -= 2;
-            continue;
+        // Detectar nova liña
+        if (c == '\n') {
+            l++;
         }
-        if (a->comentario_bloque) {
-            if (c == '"') {
-                buf[i++] = c;
-            } else {
-                u32 j = i;
-                while (buf[j - 1] == '"') {
-                    buf[j-- - 1] = '\0';
-                }
-                i = j;
-            }
-            continue;
+
+        // Buscar a palabra 'for'
+        detectar_for(c);
+        if (estado == 4) {
+            log("for detectado na liña %u\n", l);
+            vec_clear(buf);
         }
-    }*/
+    }
 
     return 0;
 }

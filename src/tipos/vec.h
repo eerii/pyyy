@@ -44,12 +44,20 @@
 // ata que o array se redimensiona
 //      @param V: Vector a inicializar
 //      @param X: Array de elementos co que inicializalo
-#define vec_init_from(V, X)                                                    \
+//      @param N: Cantidade de elementos
+#define vec_init_from_n(V, X, N)                                               \
     do {                                                                       \
         V.data = (typeof(V.data))&(X);                                         \
-        V.len = vec_countof(V, X);                                             \
+        V.len = N;                                                             \
         V.cap = 0;                                                             \
     } while (0)
+
+// Inicializa dende un array preexistente
+// Esta solución *non* reserva memoria dinámica (malloc)
+// ata que o array se redimensiona
+//      @param V: Vector a inicializar
+//      @param X: Array de elementos co que inicializalo
+#define vec_init_from(V, X) vec_init_from_n(V, vec_countof(V, X))
 
 // Inicialización reservando memoria
 //      @param V: Vector a inicializar
@@ -73,7 +81,7 @@
 #define vec_reserve(V, N)                                                      \
     do {                                                                       \
         if (V.cap == 0 || N > V.cap) {                                         \
-            typedef typeof(*V.data) T;                                         \
+            typedef typeof(V.data[0]) T;                                       \
             T* tmp = V.data;                                                   \
             V.data = arena_push_arr(&arena, T, N);                             \
             memcpy(V.data, tmp, V.len * sizeof(T));                            \
@@ -113,19 +121,23 @@
 // Engade outro array ó final do vector
 //      @param V: Vector no que engadir
 //      @param X: Array a engadir
-#define vec_append(V, X)                                                       \
+//      @param N: Cantidad de elementos
+#define vec_append_n(V, X, N)                                                  \
     do {                                                                       \
-        u32 len = vec_countof(V, X);                                           \
-        vec_reserve(V, V.len + len);                                           \
-        memcpy(&V.data[V.len], X, len * sizeof(V.data[0]));                    \
-        V.len += len;                                                          \
+        vec_reserve(V, V.len + N);                                             \
+        memcpy(&V.data[V.len], X, N * sizeof(V.data[0]));                      \
+        V.len += N;                                                            \
     } while (0)
 
-// Obtén o último elemento do vector e o
-// elimihttps://github.com/Caalicer/ENSO_P6_dia4na Se non ten elementos, o
-// comportamento non é definido
+// Engade outro array ó final do vector
+//      @param V: Vector no que engadir
+//      @param X: Array a engadir
+#define vec_append(V, X) vec_append_n(V, X, vec_countof(V, X))
+
+// Obtén o último elemento do vector e o elimna
+// Se non ten elementos, devolve NULL
 //      @param V: Vector a comprobar
-#define vec_pop(V) ((V.len > 0) ? V.data[--V.len] : V.data[0])
+#define vec_pop(V) ((V.len > 0) ? &V.data[--V.len] : NULL)
 
 // Obtén o elemento na posición i
 // Se i >= len, devolve NULL
@@ -170,6 +182,16 @@
             memmove(&V.data[I], &V.data[I + 1],                                \
                     (V.len - I) * sizeof(*V.data));                            \
         }                                                                      \
+    } while (0)
+
+// Cambia a memoria de dous vectores
+//      @param A: Vector 1
+//      @param B: Vector 2
+#define vec_swap(A, B)                                                         \
+    do {                                                                       \
+        typeof(A) aux = A;                                                     \
+        A = B;                                                                 \
+        B = aux;                                                               \
     } while (0)
 
 // Executa o DO para cada elemento do vector

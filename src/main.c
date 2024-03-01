@@ -12,29 +12,27 @@
 //      Aquí necesito facer scopes? Igual si que hai que eliminar da TS
 //      Podo usar subarenas?
 
-// En el main tenemos 3 fases
-// - Inicialización (estructuras de datos como la tabla de simbolos (crear
+// No main temos 3 fases
+// - Inicialización (estructuras de datos como a taboa de simbolos (crear
 // memoria, cargar palabras reservadas))
-// - Ejecución (vamos pidiendo el siguiente componente léxico hasta el final)
-// - Finalización (liberar toda la memoria)
+// - Execución (imos pedindo o siguiente compoñente léxico ata o final)
+// - Finalización (liberar toda a memoria, feito grazas á arena)
 
 #include "lexico.h"
 #include "tipos/arena.h"
-
-#include "estados/afd.h"
+#include "estados/afn.h"
 
 // Definición da arena global
 Arena arena;
 
 i32 main() {
-    AFD hola;
-    hola.test = 0;
-
-    return 0;
-
-    // ---
-
     arena_init(&arena);
+
+    Fragmento afn = afn_init(regex_afn("a"));
+    printf("%c: %b\n", 'a', afn_step(&afn, 'a'));
+    printf("%c: %b\n", 'a', afn_step(&afn, 'a'));
+    printf("%c: %b\n", 'b', afn_step(&afn, 'b'));
+    printf("%c: %b\n", 'a', afn_step(&afn, 'a'));
 
     Arquivo* a = abrir_arquivo("docs/wilcoxon.py");
     if (a == NULL) {
