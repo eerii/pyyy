@@ -2,10 +2,13 @@
 // Utiliza unha arena de memoria e shifting da función hash para
 // crear e buscar nunha árbore con n=4
 // Só implementa insertar, non fai falta borrar nada da tabla de símbolos
+//
 // Referencias:
 //      - https://en.wikipedia.org/wiki/Hash_trie
 //      - https://nrk.neocities.org/articles/hash-trees-and-tries
 //      - https://nullprogram.com/blog/2022/08/08
+//
+// @author: @eerii, jose.pazos.perez@rai.usc.es
 
 #pragma once
 

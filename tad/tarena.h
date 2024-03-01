@@ -3,10 +3,13 @@
 // Vai reservando páxinas de memoria contigua conforme sexan necesarias
 // Poden marcarse bloques coma eliminados onde se colocarán "tumbas" que poderán
 // ser reutilizadas
+//
 // Referencias:
 //      - https://en.wikipedia.org/wiki/Region-based_memory_management
 //      - https://www.rfleury.com/p/untangling-lifetimes-the-arena-allocator
 //      - https://nullprogram.com/blog/2023/09/27/
+//
+// @author: @eerii, jose.pazos.perez@rai.usc.es
 
 #pragma once
 
@@ -16,6 +19,8 @@
 #include <sys/mman.h>
 
 #include "../definicions.h"
+
+// TODO: Crear arena_move usando memmove para redimensionar sen deixar tumba
 
 // TODO: Mover estos dous parametros a init para facela configurable
 //          Permitir subarenas?

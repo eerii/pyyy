@@ -11,6 +11,8 @@
 // se utilizan seguidas de punto e coma, semellantes a unha función convencional
 //
 // Usa a arena de memoria global
+//
+// @author: @eerii, jose.pazos.perez@rai.usc.es
 
 #pragma once
 
