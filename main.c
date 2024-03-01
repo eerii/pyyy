@@ -18,49 +18,17 @@
 // - Ejecución (vamos pidiendo el siguiente componente léxico hasta el final)
 // - Finalización (liberar toda la memoria)
 
+#include "tad/tarena.h"
 #include "entrada.h"
 #include "lexico.h"
-#include "tad/tarena.h"
-#include "tad/thash.h"
-#include "tad/tstr.h"
-#include "tad/tvec.h"
+
+// Definición da arena global
+Arena arena;
 
 i32 main() {
-    Arena a;
-    arena_init(&a);
+    arena_init(&arena);
 
-    HashTree* m = NULL;
-    *hash_ins(&m, str("a"), &a) = 10;
-    *hash_ins(&m, str("b"), &a) = 13;
-    *hash_ins(&m, str("c"), &a) = 15;
-    *hash_ins(&m, str("d"), &a) = 20;
-    log("%d\n", *hash_ins(&m, str("c"), 0));
-
-    void* p = hash_ins(&m, str("c"), &a);
-    arena_del_struct(&a, p, HashTree); // Esto non é seguro para o hashmap
-    p = hash_ins(&m, str("b"), &a);
-    arena_del_struct(&a, p, HashTree);
-
-    Tumba* t = a.eliminados;
-    while(t != NULL) {
-        log("tumba %p, %lu\n", t, t->tam);
-        t = t->sig;
-    }
-
-    *hash_ins(&m, str("e"), &a) = 30;
-    *hash_ins(&m, str("f"), &a) = 45;
-
-    log("tam: %ld, fin: %p\n", a.actual - a.inicio, a.fin);
-
-    arena_free(&a);
-
-    Str s;
-    vec_init_from(s, "hey");
-    printf("%s\n", s.data);
-
-    return 0;
-
-    /*Arquivo* a = abrir_arquivo("wilcoxon.py");
+    Arquivo* a = abrir_arquivo("wilcoxon.py");
     if (a == NULL) {
         return 1;
     }
@@ -70,5 +38,7 @@ i32 main() {
         // ...
     }
 
-    return 0;*/
+    log("tam arena: %lu/%lu\n", arena_len(arena), arena_cap(arena));
+    arena_free(&arena);
+    return 0;
 }

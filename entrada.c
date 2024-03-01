@@ -1,4 +1,5 @@
 #include "entrada.h"
+#include "tad/tarena.h"
 
 Arquivo* abrir_arquivo(const char* nome) {
     FILE* file = fopen(nome, "r");
@@ -8,7 +9,7 @@ Arquivo* abrir_arquivo(const char* nome) {
     }
     log("abriuse o arquivo %s\n", nome);
 
-    Arquivo* arquivo = malloc(sizeof(Arquivo));
+    Arquivo* arquivo = (Arquivo*)arena_push(&arena, sizeof(Arquivo));
     arquivo->file = file;
 
     return arquivo;
@@ -18,7 +19,6 @@ i32 seguinte_caracter(Arquivo* a) {
     i32 c = fgetc(a->file);
     if (c == EOF) {
         fclose(a->file);
-        free(a);
         log("%s", "chegouse ó final do arquivo\n");
     }
 

@@ -9,11 +9,8 @@
 //
 // Os do / while están para garantizar o correcto funcionamento das macros cando
 // se utilizan seguidas de punto e coma, semellantes a unha función convencional
-
-// TODO: Mover implementación a arena
-//      - Pensar cómo facer a recolocación e aproveitar espazos
-//      - Tamén en cómo definir a arena para non ter que pasala como parámetro
-//      - Quizás facer isto en string só?
+//
+// Usa a arena de memoria global
 
 #pragma once
 
@@ -59,7 +56,8 @@
 //      @param N: Cantidade de elementos que reservar inicialmente
 #define vec_init_res(V, N)                                                     \
     do {                                                                       \
-        V.data = malloc(N * sizeof *V.data);                                   \
+        typedef typeof(*V.data) T;                                             \
+        V.data = arena_push_arr(&arena, T, N);                                 \
         V.len = 0;                                                             \
         V.cap = N;                                                             \
     } while (0)
@@ -74,14 +72,14 @@
 //      @param N: Novo tamaño do vector
 #define vec_reserve(V, N)                                                      \
     do {                                                                       \
-        if (V.cap == 0) {                                                      \
-            typeof(V.data) tmp = V.data;                                       \
-            V.data = malloc(N * sizeof(*V.data));                              \
-            memcpy(V.data, tmp, V.len * sizeof(*V.data));                      \
-            V.cap = N;                                                         \
-        }                                                                      \
-        if (N > V.cap) {                                                       \
-            V.data = realloc(V.data, N * sizeof(*V.data));                     \
+        if (V.cap == 0 || N > V.cap) {                                         \
+            typedef typeof(*V.data) T;                                         \
+            T* tmp = V.data;                                                   \
+            V.data = arena_push_arr(&arena, T, N);                             \
+            memcpy(V.data, tmp, V.len * sizeof(T));                            \
+            if (N > V.cap) {                                                   \
+                arena_del(&arena, (u8*)tmp, V.cap);                            \
+            }                                                                  \
             V.cap = N;                                                         \
         }                                                                      \
     } while (0)
@@ -123,8 +121,9 @@
         V.len += len;                                                          \
     } while (0)
 
-// Obtén o último elemento do vector e o elimina
-// Se non ten elementos, o comportamento non é definido
+// Obtén o último elemento do vector e o
+// elimihttps://github.com/Caalicer/ENSO_P6_dia4na Se non ten elementos, o
+// comportamento non é definido
 //      @param V: Vector a comprobar
 #define vec_pop(V) ((V.len > 0) ? V.data[--V.len] : V.data[0])
 
@@ -203,7 +202,7 @@
 #define vec_free(V)                                                            \
     do {                                                                       \
         if (V.cap != 0)                                                        \
-            free(V.data);                                                      \
+            arena_del(&arena, (u8*)V.data, V.cap);                             \
         V.len = 0;                                                             \
         V.cap = 0;                                                             \
     } while (0)

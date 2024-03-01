@@ -1,7 +1,12 @@
 // Implementación dun alocador baseado en arenas de memoria
 // Isto é útil para controlar exactamente como se asigna a memoria no programa
 // Vai reservando páxinas de memoria contigua conforme sexan necesarias
-// Poden marcarse bloques coma eliminados onde se colocarán "tumbas" que poderán ser reutilizadas
+// Poden marcarse bloques coma eliminados onde se colocarán "tumbas" que poderán
+// ser reutilizadas
+// Referencias:
+//      - https://en.wikipedia.org/wiki/Region-based_memory_management
+//      - https://www.rfleury.com/p/untangling-lifetimes-the-arena-allocator
+//      - https://nullprogram.com/blog/2023/09/27/
 
 #pragma once
 
@@ -14,15 +19,14 @@
 
 // TODO: Mover estos dous parametros a init para facela configurable
 //          Permitir subarenas?
-//          Poden funcionar coma un push inverso (en plan vanse asignando dende o final)
-//          Deben de quitarse en orde de stack (a última primeiro)
-//          Permite crecer na arena principal, permite crecer na subarena (dentro do límite), permite engadir novas arenas
+//          Poden funcionar coma un push inverso (en plan vanse asignando dende
+//          o final) Deben de quitarse en orde de stack (a última primeiro)
+//          Permite crecer na arena principal, permite crecer na subarena
+//          (dentro do límite), permite engadir novas arenas
 
 // Tamaño e número máximo de páxinas
-#define CHUNK ((u64)1<<20) // 1mb
-#ifndef MAX_BLOCKS
-#define MAX_BLOCKS ((u64)1<<10) // 16gb*
-#endif
+#define CHUNK ((u64)1 << 20)      // 1mb
+#define MAX_BLOCKS ((u64)1 << 10) // 16gb*
 // NOTA: Pode configurarse moito máis alto, xa que só reservamos direccións de
 // memoria virtuais, das que temos máis de 100tb a nosa disposición
 // Por suposto, isto estará limitado cando se vaian creando páxinas pola
@@ -42,11 +46,18 @@ struct Tumba {
 // Arena de memoria
 typedef struct Arena Arena;
 struct Arena {
-    void* inicio;
-    void* actual;
-    void* fin;
+    u8* inicio;
+    u8* actual;
+    u8* fin;
     Tumba* eliminados;
 };
+
+#define arena_len(A) (A.actual - A.inicio)
+#define arena_cap(A) (A.fin - A.inicio)
+
+// Arena global de memoria
+// Ten que ser definida en *exactamente* un ficheiro .c
+extern Arena arena;
 
 // Engade unha páxina á arena de memoria
 //      @param a: Arena de memoria
@@ -68,10 +79,11 @@ static inline void arena_init(Arena* a) {
 
     // Usamos mmap para reservar unha rexión de direccións de memoria
     // (pero todavía non a memoria física)
-    a->inicio = mmap(NULL, CHUNK * MAX_BLOCKS, PROT_NONE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    a->inicio = (u8*)mmap(NULL, CHUNK * MAX_BLOCKS, PROT_NONE,
+                          MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     if (a->inicio == MAP_FAILED) {
         err("erro ao crear a arena de memoria: %d\n", errno);
-    } 
+    }
     log("arena creada en %p\n", a->inicio);
 
     // Reservamos a primeira páxina de memoria
@@ -80,18 +92,11 @@ static inline void arena_init(Arena* a) {
     arena_grow(a);
 }
 
-// Destrúe unha arena de memoria
-//      @param a: Arena de memoria
-static inline void arena_free(Arena* a) {
-    munmap(a->inicio, CHUNK * MAX_BLOCKS);
-    log("arena liberada en %p\n", a->inicio);
-}
-
 // Crea unha nova rexión na arena de memoria
 //      @param a: Arena de memoria
 //      @param n: Cantidade de memoria a reservar
-static inline void* arena_push(Arena* a, u64 n) {
-    void* mem = NULL;
+static inline u8* arena_push(Arena* a, u64 n) {
+    u8* mem = NULL;
 
     // Busca nas tumbas se hai espazo dispoñible
     Tumba* t = a->eliminados;
@@ -99,9 +104,9 @@ static inline void* arena_push(Arena* a, u64 n) {
     while (t != NULL) {
         // Se hai espazo na tumba
         if (t->tam >= n) {
-            mem = (void*)t;
+            mem = (u8*)t;
             t->tam -= n;
-            
+
             // Comprobamos se queda espazo suficiente para mover a tumba
             // Se non, simplemente aceptamos ese espazo como perdido
             Tumba* tn = t->sig;
@@ -140,12 +145,12 @@ static inline void* arena_push(Arena* a, u64 n) {
 // Crea unha nova rexión na arena de memoria e a inicializa a 0
 //      @param a: Arena de memoria
 //      @param n: Cantidade de memoria a reservar
-static inline void* arena_push_zero(Arena* a, u64 n) {
-    void* mem = arena_push(a, n);
-    return memset(mem, 0, n);
+static inline u8* arena_push_zero(Arena* a, u64 n) {
+    u8* mem = arena_push(a, n);
+    return (u8*)memset(mem, 0, n);
 }
 
-#define arena_push_arr(A, T, N) (T*)arena_push(A, sizeof(T) * N)
+#define arena_push_arr(A, T, N) (T*)arena_push(A, sizeof(T) * ((u64)N))
 #define arena_push_struct(A, T) arena_push_arr(A, T, 1)
 
 // Elimina bytes do final do stack
@@ -159,7 +164,7 @@ static inline void arena_pop(Arena* a, u64 n) {
 //      @param a: Arena de memoria
 //      @param p: Punteiro da dirección na que empezar
 //      @param n: Cantidade de memoria a eliminar
-static inline void arena_del(Arena* a, void* p, u64 n) {
+static inline void arena_del(Arena* a, u8* p, u64 n) {
     // Se o espazo libre é menor que o tamaño dunha tumba, aceptamos perdelo
     if (n < sizeof(Tumba)) {
         return;
@@ -169,7 +174,7 @@ static inline void arena_del(Arena* a, void* p, u64 n) {
     assert(p >= a->inicio && p < a->fin);
 
     // Crea a tumba
-    Tumba* t = p;
+    Tumba* t = (Tumba*)p;
     t->tam = n;
     t->sig = NULL;
 
@@ -180,7 +185,8 @@ static inline void arena_del(Arena* a, void* p, u64 n) {
     }
 
     // Percorre as tumbas existentes e engade a nova ó final
-    // TODO: Comprobar que non hai outra tumba nese lugar (e mezclar as existentes)
+    // TODO: Comprobar que non hai outra tumba nese lugar, mezclar as
+    // existentes e ver se coincide co final (mover punteiro actual)
     Tumba* it = a->eliminados;
     while (true) {
         if (it->sig == NULL) {
@@ -191,11 +197,16 @@ static inline void arena_del(Arena* a, void* p, u64 n) {
     }
 }
 
-#define arena_del_arr(A, P, T, N) arena_del(A, P, sizeof(T) * N)
+#define arena_del_arr(A, P, T, N) arena_del(A, P, sizeof(T) * ((u64)N))
 #define arena_del_struct(A, P, T) arena_del_arr(A, P, T, 1)
 
 // Limpa a arena (retorna a posición actual ó inicio)
 //      @param a: Arena de memoria
-static inline void arena_clear(Arena* a) {
-    a->actual = a->inicio;
+static inline void arena_clear(Arena* a) { a->actual = a->inicio; }
+
+// Destrúe unha arena de memoria
+//      @param a: Arena de memoria
+static inline void arena_free(Arena* a) {
+    munmap(a->inicio, CHUNK * MAX_BLOCKS);
+    log("arena liberada en %p\n", a->inicio);
 }

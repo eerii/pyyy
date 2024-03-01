@@ -1,28 +1,6 @@
-#include <ctype.h>
-#include <string.h>
-
 #include "lexico.h"
-
-bool e_espazo(char c) { return c == ' ' || c == '\n' || c == '\t'; }
-bool e_separador(char c) { return !isalnum(c) && c != '"' && c != '_'; }
-
-void eliminar_espazos_finais(char* buf) {
-    for (i32 i = strlen(buf) - 1; i >= 0; i--) {
-        if (!e_espazo(buf[i])) {
-            return;
-        }
-        buf[i] = '\0';
-    }
-}
-
-void procesar_token(char* buf, int* i) {
-    buf[*i] = '\0';
-    eliminar_espazos_finais(buf);
-    *i = 0;
-    if (buf[0] != '\0') {
-        printf(C_YELLOW "%s\n" C_RESET, buf);
-    }
-}
+#include "entrada.h"
+#include "tad/tstr.h"
 
 u32 seguinte_lexico(Arquivo* a) {
     // TODO: Mover buf a str/vec
@@ -33,18 +11,30 @@ u32 seguinte_lexico(Arquivo* a) {
     //      - Operadores ...
     //      Mirar se podo usar regex en c
 
-    /*u32 c;
-    u32 i = 0;
-    char buf[MAX_LEN];
+    i32 c;
+    static Str buf;
+    if (buf.cap == 0) {
+        vec_init_res(buf, 128);
+    }
 
     while (true) {
         c = seguinte_caracter(a);
+        vec_push(buf, c);
 
         // Comprobar fin de arquivo
         if (c == EOF) {
             return c;
         }
 
+        // Comprobar fin de liña
+        if (c == '\n' || c == '\t') {
+            vec_push(buf, '\0');
+            log("%s", buf.data);
+            vec_clear(buf);
+        }
+    }
+
+    /*
         // Comprobar comentario de liña
         // TODO: Comentario de encoding
         if (c == '\n' || c == '\t') {
@@ -74,14 +64,6 @@ u32 seguinte_lexico(Arquivo* a) {
                 i = j;
             }
             continue;
-        }
-
-        // Engadir ó buffer
-        buf[i++] = c;
-
-        // Separar tokens
-        if (e_separador(c)) {
-            procesar_token(buf, &i);
         }
     }*/
 

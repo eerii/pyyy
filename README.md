@@ -2,9 +2,8 @@
 
 ## todo
 
-- [-] estructuras de datos
-    - [-] array dinámico
-        - [ ] mover a arena
+- [x] estructuras de datos
+    - [x] array dinámico
     - [x] string
     - [x] arena de memoria
     - [x] hash map 
@@ -20,3 +19,4 @@
     - [ ] números
     - [ ] operadores
 - [ ] mellorar logging
+- [ ] macros varádicas (pasar arena en vec?)
