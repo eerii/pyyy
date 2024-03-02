@@ -26,30 +26,52 @@
 Arena arena;
 
 i32 main() {
-    arena_init(&arena);
-
-    VecEstado v;
-    vec_init(v);
+    arena_init(&arena); 
 
     AFN aa = afn_atomic('a');
     AFN bb = afn_atomic('b');
-    AFN afn = afn_and(&aa, &bb);
-    Estado* e = afn.inicio;
+    AFN cc = afn_and(&aa, &bb);
+    AFN afn = afn_un_ou_mais(&cc);
 
-    const char* s = "ccaab";
+    const char* s = "ccab";
+
+    VecEstado vi, vs;
+    vec_init(vi);
+    vec_push(vi, afn.inicio);
+    vec_init(vs);
+
     for (u32 i = 0; i < strlen(s); ++i) {
-        afn_delta(e, s[i], &v);
-        for (u32 j = 0; j < v.len; ++j) {
-            printf("%p,", v.data[j]);
+        for (u32 j = 0; j < vi.len; ++j) {
+            afn_delta(vi.data[j], s[i], &vs);
         }
-        printf("\n");
-        if (v.len > 0) {
-            e = v.data[0]; // TODO: Las dos ramas
-            vec_clear(v);
+
+        printf("AFN: %c (%d)\n  actual:\n", s[i], s[i]);
+        for (u32 i = 0; i < vi.len; i++) {
+            Estado* e = vi.data[i];
+            printf("    %p %d-%d\n", e, e->trans[0], e->trans[1]);
         }
-        printf("AFN: %p %d-%d\n", e, e->trans[0], e->trans[1]); 
+        printf("  seguinte:\n");
+        for (u32 i = 0; i < vs.len; i++) {
+            Estado* e = vs.data[i];
+            printf("    %p %d-%d\n", e, e->trans[0], e->trans[1]);
+        }
+        printf("\n\n");
+
+        VecEstado tmp = vi;
+        vi = vs;
+        vs = tmp;
+        vec_clear(vs); 
     }
-    printf("Aceptado: %s\n\n", e == afn.fin ? "true" : "false");
+
+    bool aceptado = false;
+    vec_for_each(vi, e, aceptado |= e == afn.fin);
+    printf("Aceptado: %s\n\n", aceptado ? "true" : "false");
+
+    FILE* graph = fopen("docs/afn.dot", "w");
+    afn_graph("ab", &afn, graph);
+    fclose(graph);
+
+    afn_free(&afn);
 
     Arquivo* a = abrir_arquivo("docs/wilcoxon.py");
     if (a == NULL) {

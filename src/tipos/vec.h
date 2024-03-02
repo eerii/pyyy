@@ -106,6 +106,35 @@
         V.len = N;                                                             \
     } while (0)
 
+// Busca un elemento no vector, devolve o índice da primeira ocurrencia
+// Se non o atopa, I será V.len
+//      @param V: Vector no que buscar
+//      @param X: Elemento a buscar
+//      @param I: Posición do elemento
+//      @param F(a, b): Función de comparación
+#define vec_find(V, X, I, F)                                                   \
+    do {                                                                       \
+        for (I = 0; I < V.len; ++I) {                                          \
+            if (F(V.data[I], X)) {                                             \
+                break;                                                         \
+            }                                                                  \
+        }                                                                      \
+    } while (0)
+
+// Busca un elemento no vector, devolve o índice da primeira ocurrencia
+// Se non o atopa, I será V.len
+//      @param V: Vector no que buscar
+//      @param X: Elemento a buscar
+//      @param I: Posición do elemento
+#define vec_find_eq(V, X, I)                                                   \
+    do {                                                                       \
+        for (I = 0; I < V.len; ++I) {                                          \
+            if (V.data[I] == X) {                                              \
+                break;                                                         \
+            }                                                                  \
+        }                                                                      \
+    } while (0)
+
 // Engade un elemento ó final do vector
 // Se non cabe, redimensiona
 //      @param V: Vector ó que engadir
@@ -116,6 +145,17 @@
             vec_reserve(V, V.cap > 0 ? FACTOR_CRECEMENTO_VEC(V)                \
                                      : V.len + RESERVA_POR_DEFECTO_VEC);       \
         V.data[V.len++] = X;                                                   \
+    } while (0)
+
+// Engade un elemento ó final do vector se non existe
+//      @param V: Vector no que engadir
+//      @param X: Elemento a engadir
+#define vec_push_unique(V, X)                                                  \
+    do {                                                                       \
+        u32 it;                                                                \
+        vec_find_eq(V, X, it);                                                 \
+        if (it == V.len)                                                       \
+            vec_push(V, X);                                                    \
     } while (0)
 
 // Engade outro array ó final do vector
@@ -184,16 +224,6 @@
         }                                                                      \
     } while (0)
 
-// Cambia a memoria de dous vectores
-//      @param A: Vector 1
-//      @param B: Vector 2
-#define vec_swap(A, B)                                                         \
-    do {                                                                       \
-        typeof(A) aux = A;                                                     \
-        A = B;                                                                 \
-        B = aux;                                                               \
-    } while (0)
-
 // Executa o DO para cada elemento do vector
 //      @param V: Vector no que executar o for
 //      @param VAR: Variável auxiliar na que se garda o valor de cada elemento
@@ -224,7 +254,7 @@
 #define vec_free(V)                                                            \
     do {                                                                       \
         if (V.cap != 0)                                                        \
-            arena_del(&arena, (u8*)V.data, V.cap);                             \
+            arena_del(&arena, (u8*)V.data, V.cap * sizeof(*V.data));           \
         V.len = 0;                                                             \
         V.cap = 0;                                                             \
     } while (0)

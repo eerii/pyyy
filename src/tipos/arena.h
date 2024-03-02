@@ -45,7 +45,7 @@
 typedef struct Tumba Tumba;
 struct Tumba {
     Tumba* sig;
-    u64 tam;
+    u32 tam;
 };
 
 // Arena de memoria
@@ -108,14 +108,14 @@ static inline u8* arena_push(Arena* a, u64 n) {
     Tumba* prev = NULL;
     while (t != NULL) {
         // Se hai espazo na tumba
-        if (t->tam >= n) {
+        if ((u64)t->tam >= n) {
             mem = (u8*)t;
             t->tam -= n;
 
             // Comprobamos se queda espazo suficiente para mover a tumba
             // Se non, simplemente aceptamos ese espazo como perdido
             Tumba* tn = t->sig;
-            if (t->tam >= sizeof(Tumba)) {
+            if ((u64)t->tam >= sizeof(Tumba)) {
                 tn = (Tumba*)((u8*)t + n);
                 tn->sig = t->sig;
                 tn->tam = t->tam;
@@ -169,14 +169,20 @@ static inline void arena_pop(Arena* a, u64 n) {
 //      @param a: Arena de memoria
 //      @param p: Punteiro da dirección na que empezar
 //      @param n: Cantidade de memoria a eliminar
-static inline void arena_del(Arena* a, u8* p, u64 n) {
+static inline void arena_del(Arena* a, u8* p, u32 n) {
     // Se o espazo libre é menor que o tamaño dunha tumba, aceptamos perdelo
-    if (n < sizeof(Tumba)) {
+    if ((u64)n < sizeof(Tumba)) {
         return;
     }
 
     // Comprobamos que o punteiro está dentro da rexión ocupada da arena
-    assert(p >= a->inicio && p < a->fin);
+    assert(p >= a->inicio && p + (u64)n <= a->actual);
+
+    // Se o punteiro está no final da arena, movemos o actual cara atrás
+    if (p + (u64)n == a->actual) {
+        a->actual = p;
+        return;
+    }
 
     // Crea a tumba
     Tumba* t = (Tumba*)p;
@@ -190,19 +196,32 @@ static inline void arena_del(Arena* a, u8* p, u64 n) {
     }
 
     // Percorre as tumbas existentes e engade a nova ó final
-    // TODO: Comprobar que non hai outra tumba nese lugar, mezclar as
-    // existentes e ver se coincide co final (mover punteiro actual)
     Tumba* it = a->eliminados;
     while (true) {
+        // Comproba que a tumba non se superpon ou é anterior/continuación
+        u8* a = (u8*)it;
+        u8* b = (u8*)t;
+        if (a <= b + t->tam && a + it->tam >= b) {
+            u8* min = a < b ? a : b;
+            u8* max = a + it->tam > b + t->tam ? a + it->tam : b + t->tam;
+            Tumba* sig = it->sig;
+            it = (Tumba*)min;
+            it->tam = max - min;
+            it->sig = sig;
+            return;
+        }
+
+        // Se non se superpon ou é posterior, engade a nova tumba
         if (it->sig == NULL) {
             it->sig = t;
             return;
         }
+
         it = it->sig;
     }
 }
 
-#define arena_del_arr(A, P, T, N) arena_del(A, P, sizeof(T) * ((u64)N))
+#define arena_del_arr(A, P, T, N) arena_del(A, P, sizeof(T) * ((u32)N))
 #define arena_del_struct(A, P, T) arena_del_arr(A, P, T, 1)
 
 // Limpa a arena (retorna a posición actual ó inicio)
