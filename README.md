@@ -6,7 +6,16 @@
     - [x] array dinámico
     - [x] string
     - [x] arena de memoria
-    - [x] hash map 
+    - [x] hash map
+    - [ ] set
+- [ ] autómatas formais
+    - [x] afn epsilon
+    - [x] calculo clausuras
+        - [ ] cambiar vec por set
+    - [ ] afn a afd
+    - [ ] executar afd
+    - [ ] regex a afn
+        - [ ] clases de caracteres (numeros, letras...)
 - [ ] símbolos especiais
     - [ ] NEWLINE - liñas lóxicas
     - [ ] INDENT / DEDENT - indentación

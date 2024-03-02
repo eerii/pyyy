@@ -21,6 +21,7 @@
 #include "lexico.h"
 #include "tipos/arena.h"
 #include "estados/afn.h"
+#include "estados/afd.h"
 
 // Definición da arena global
 Arena arena;
@@ -30,8 +31,32 @@ i32 main() {
 
     AFN aa = afn_atomic('a');
     AFN bb = afn_atomic('b');
-    AFN cc = afn_and(&aa, &bb);
+    AFN cc = afn_or(&aa, &bb);
     AFN afn = afn_un_ou_mais(&cc);
+
+    VecEstado cl = afn_clausura(afn.inicio);
+     for (u32 i = 0; i < cl.len; ++i) {
+        printf("%p %d-%d\n", cl.data[i], cl.data[i]->trans[0], cl.data[i]->trans[1]);
+    }
+    printf("\n");
+    VecEstado cl2 = afn_clausura_set(&cl);
+    for (u32 i = 0; i < cl2.len; ++i) {
+        printf("%p %d-%d\n", cl2.data[i], cl2.data[i]->trans[0], cl2.data[i]->trans[1]);
+    }
+
+    printf("%d\n", afn_clausura_equals(&cl, &cl2));
+
+    Str simb = afn_simbolos(&afn);
+    vec_push(simb, '\0');
+    printf("%s\n", simb.data);
+
+    AFD afd = afn_to_afd(&afn);
+
+    FILE* graph = fopen("afn.dot", "w");
+    afn_graph("graph", &afn, graph);
+    fclose(graph);
+
+    return 0;
 
     const char* s = "ccab";
 
@@ -42,17 +67,17 @@ i32 main() {
 
     for (u32 i = 0; i < strlen(s); ++i) {
         for (u32 j = 0; j < vi.len; ++j) {
-            afn_delta(vi.data[j], s[i], &vs);
+            /* afn_delta(vi.data[j], s[i], &vs); */
         }
 
         printf("AFN: %c (%d)\n  actual:\n", s[i], s[i]);
         for (u32 i = 0; i < vi.len; i++) {
-            Estado* e = vi.data[i];
+            const Estado* e = vi.data[i];
             printf("    %p %d-%d\n", e, e->trans[0], e->trans[1]);
         }
         printf("  seguinte:\n");
         for (u32 i = 0; i < vs.len; i++) {
-            Estado* e = vs.data[i];
+            const Estado* e = vs.data[i];
             printf("    %p %d-%d\n", e, e->trans[0], e->trans[1]);
         }
         printf("\n\n");
@@ -65,11 +90,7 @@ i32 main() {
 
     bool aceptado = false;
     vec_for_each(vi, e, aceptado |= e == afn.fin);
-    printf("Aceptado: %s\n\n", aceptado ? "true" : "false");
-
-    FILE* graph = fopen("docs/afn.dot", "w");
-    afn_graph("ab", &afn, graph);
-    fclose(graph);
+    printf("Aceptado: %s\n\n", aceptado ? "true" : "false"); 
 
     afn_free(&afn);
 
