@@ -13,8 +13,8 @@
 
 #pragma once
 
-#include "../tipos/set.h"
 #include "../tipos/str.h"
+#include "../tipos/vec.h"
 
 // Caracteres especiais para marcar transicións
 #define TRANS_NONE 1
@@ -30,6 +30,9 @@ struct Estado {
     Estado* to[2];
     Trans trans[2];
 };
+
+// Vector de estados
+typedef Vec(const Estado*) VecEstado;
 
 // Autómata finito non determinado
 // Ten un estado inicial e un estado final
@@ -66,11 +69,11 @@ AFN afn_cero_ou_un(const AFN* a);
 
 // Calcula a clausura de epsilon para un estado
 //      @param e Estado do que calcular a clausura
-Set* afn_clausura(const Estado* e);
+VecEstado afn_clausura(const Estado* e);
 
 // Calcula a clausura de epsilon para un conxunto de estados
 //      @param v Conjunto de estados
-Set* afn_clausura_set(Set* s);
+VecEstado afn_clausura_set(const VecEstado* s);
 
 // Obtén unha lista dos símbolos utilizados no AFN
 //      @param a Autómata

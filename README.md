@@ -7,7 +7,6 @@
     - [x] string
     - [x] arena de memoria
     - [x] hash map
-    - [x] set
 - [ ] autómatas formais
     - [x] afn epsilon
     - [x] calculo clausuras

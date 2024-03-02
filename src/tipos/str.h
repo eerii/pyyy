@@ -17,16 +17,15 @@ typedef Vec(char) Str;
 // Engade un caracter ó final do string, preservando o caracter de terminación
 //      @param s: String no que engadir
 //      @param c: Caracter a engadir
-static inline void str_push(Str* s, char c) { vec_ins((*s), s->len - 2, c); }
+static inline void str_push(Str* s, char c) {
+    // Inserta antes do último caracter (\0)
+    vec_ins((*s), s->len - 2, c);
+}
 
 // Xunta dous strings correctamente
 //      @param S: String no que engadir
 //      @param X: String a engadir
-#define str_append(S, X)                                                       \
-    do {                                                                       \
-        vec_pop(S);                                                            \
-        vec_append(S, X);                                                      \
-    } while (0)
+#define str_append(S, X) (vec_pop(S), vec_append(S, X))
 
 // Crea un Str dende un literal en linea
 //      @param l: Literal string

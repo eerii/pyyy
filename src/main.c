@@ -43,26 +43,27 @@ i32 main() {
 
     const char* s = "ccab";
 
-    Set* vi = 0;
-    Set* vs = 0;
-    set_ins(&vi, afn.inicio, &arena);
+    VecEstado vi, vs;
+    vec_init_from_n(vi, afn.inicio, 1);
+    vec_init(vs);
 
     for (u32 i = 0; i < strlen(s); ++i) {
         printf("\n%c (%d)\n  actual:\n", s[i], s[i]);
-        set_for_each(vi, e, printf("    %p %d-%d\n", e->key, e->key->trans[0], e->key->trans[1]));
+        vec_for_each(vi, e,
+                     printf("    %p %d-%d\n", e, e->trans[0], e->trans[1]));
         printf("  seguinte:\n");
-        set_for_each(vs, e, printf("    %p %d-%d\n", e->key, e->key->trans[0], e->key->trans[1]));
+        vec_for_each(vs, e,
+                     printf("    %p %d-%d\n", e, e->trans[0], e->trans[1]));
         printf("\n");
 
-        Set* tmp = vi;
+        VecEstado tmp = vi;
         vi = vs;
         vs = tmp;
-        set_free(vs); // TODO: Cambiar por clear?
-        vs = 0;
+        vec_clear(vs);
     }
 
     bool aceptado = false;
-    set_for_each(vi, e, aceptado |= e->key == afn.fin);
+    vec_for_each(vi, e, aceptado |= e == afn.fin);
     printf("Aceptado: %s\n\n", aceptado ? "true" : "false");
 
     afn_free(&afn);

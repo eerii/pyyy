@@ -36,17 +36,17 @@ bool _afn_add(Estado* dende, char c, Estado* ata) {
     return true;
 }
 
-// Visita tódolos estados e crea un vector con eles
-void _afn_visit(const Estado* e, Set** s) {
+// Visita tódolos estados e chea un vector con eles
+void _afn_visit(VecEstado* s, const Estado* e) {
     for (i8 i = 0; i < _trans_count(e); i++) {
-        if (!set_ins(s, e->to[i], &arena)) {
-            _afn_visit(e->to[i], s);
+        if (vec_push_unique((*s), e->to[i])) {
+            _afn_visit(s, e->to[i]);
         }
     }
 }
 
 // Escribe unha transición no arquivo graphviz
-void _afn_graph_trans(const Estado* e, i8 to, FILE* f) {
+void _afn_graph_trans(const Estado* e, u8 to, FILE* f) {
     switch (e->trans[to]) {
     case TRANS_NONE:
         break;
@@ -63,21 +63,25 @@ void _afn_graph_trans(const Estado* e, i8 to, FILE* f) {
 
 // Escribe as transicións dos estados alcanzables
 void _afn_graph_alcanzables(const Estado* e, FILE* f) {
-    Set* s = 0;
-    u32 i = 0;
-    _afn_visit(e, &s);
-    set_for_each(s, e, _afn_graph_trans(e->key, i++, f));
-    set_free(s);
+    VecEstado s;
+    vec_init(s);
+    _afn_visit(&s, e);
+    vec_for_each(s, e, {
+        for (u8 i = 0; i < _trans_count(e); i++) {
+            _afn_graph_trans(e, i, f);
+        }
+    });
+    vec_free(s);
 }
 
 // Calcula recursivamente a clausura dun estado
-void _afn_clausura_rec(const Estado* e, Set* s) {
+void _afn_clausura_rec(VecEstado* s, const Estado* e) {
     for (u8 i = 0; i < _trans_count(e); ++i) {
         if (e->trans[i] != TRANS_EPSILON) {
             continue;
         }
-        if (!set_ins(&s, e->to[i], &arena)) {
-            _afn_clausura_rec(e->to[i], s);
+        if (vec_push_unique((*s), e->to[i])) {
+            _afn_clausura_rec(s, e->to[i]);
         }
     }
 }
@@ -152,19 +156,21 @@ AFN afn_cero_ou_un(const AFN* a) {
 }
 
 // Calcula a clausura para un estado
-Set* afn_clausura(const Estado* e) {
-    Set* c = 0;
-    set_ins(&c, e, &arena);
-    _afn_clausura_rec(e, c);
+VecEstado afn_clausura(const Estado* e) {
+    VecEstado c;
+    vec_init(c);
+    vec_push(c, e);
+    _afn_clausura_rec(&c, e);
     return c;
 }
 
 // Calcula a clausura para múltiples estados
-Set* afn_clausura_set(Set* s) {
-    Set* c = 0;
-    set_for_each(s, e, {
-        set_ins(&c, e->key, &arena);
-        _afn_clausura_rec(e->key, c);
+VecEstado afn_clausura_set(const VecEstado* s) {
+    VecEstado c;
+    vec_init(c);
+    vec_for_each((*s), e, {
+        vec_push_unique(c, e);
+        _afn_clausura_rec(&c, e);
     });
     return c;
 }
@@ -174,36 +180,39 @@ Str afn_simbolos(const AFN* a) {
     Str simbolos;
     vec_init(simbolos);
 
-    Set* s = 0;
-    set_ins(&s, a->inicio, &arena);
-    _afn_visit(a->inicio, &s);
+    VecEstado s;
+    vec_init(s);
+    vec_push(s, a->inicio);
+    _afn_visit(&s, a->inicio);
 
-    set_for_each(s, e, {
-        if (e->key->trans[0] > TRANS_EPSILON) {
-            vec_push(simbolos, e->key->trans[0]);
+    vec_for_each(s, e, {
+        if (e->trans[0] > TRANS_EPSILON) {
+            vec_push(simbolos, e->trans[0]);
         }
-        if (e->key->trans[1] > TRANS_EPSILON) {
-            vec_push(simbolos, e->key->trans[1]);
+        if (e->trans[1] > TRANS_EPSILON) {
+            vec_push(simbolos, e->trans[1]);
         }
     });
 
-    set_free(s);
+    vec_free(s);
     return simbolos;
 }
 
 // Libera a memoria dun afn
 void afn_free(AFN* a) {
-    Set* s = 0;
-    set_ins(&s, a->inicio, &arena);
-    _afn_visit(a->inicio, &s);
-    set_for_each(s, e, arena_del(&arena, (u8*)(e->key), sizeof(Estado)));
-    set_free(s);
+    VecEstado s;
+    vec_init(s);
+    vec_push(s, a->inicio);
+    _afn_visit(&s, a->inicio);
+    vec_for_each(s, e, arena_del(&arena, (u8*)(e), sizeof(Estado)));
+    vec_free(s);
 }
 
 // Representa o autómata en formato graphviz
 void afn_graph(const char* regex, const AFN* a, FILE* f) {
-    Set* s = 0;
-    set_ins(&s, a->inicio, &arena);
+    VecEstado s;
+    vec_init(s);
+    vec_push(s, a->inicio);
 
     fprintf(f,
             "digraph finite_state_machine {\n"
@@ -213,10 +222,10 @@ void afn_graph(const char* regex, const AFN* a, FILE* f) {
             "    node [shape = circle]\n",
             regex, (void*)a->fin);
 
-    _afn_visit(a->inicio, &s);
-    set_for_each(s, e, {
-        for (u32 j = 0; j < _trans_count(e->key); j++) {
-            _afn_graph_trans(e->key, j, f);
+    _afn_visit(&s, a->inicio);
+    vec_for_each(s, e, {
+        for (u32 j = 0; j < _trans_count(e); j++) {
+            _afn_graph_trans(e, j, f);
         }
     });
 
@@ -224,5 +233,5 @@ void afn_graph(const char* regex, const AFN* a, FILE* f) {
     fprintf(f, "    start -> addr_%p [ label = \"start\" ]\n}\n",
             (void*)a->inicio);
 
-    set_free(s);
+    vec_free(s);
 }

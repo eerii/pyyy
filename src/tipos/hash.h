@@ -75,3 +75,32 @@ static inline HashValue* hash_ins(HashTree** m, HashKey key, Arena* a) {
     (*m)->key = key;
     return &(*m)->value;
 }
+
+// Percorre o hashmap executando unha función para cada elemento
+//      @param M: Hashmap a percorrer
+//      @param VAR: Variável auxiliar na que se garda o valor de cada elemento
+//      @param DO: Código a executar
+#define hash_for_each(H, VAR, DO)                                              \
+    ({                                                                         \
+        if (H) {                                                               \
+            Vec(typeof(H)) stack;                                              \
+            vec_init(stack);                                                   \
+            vec_push(stack, H);                                                \
+            while (stack.len > 0) {                                            \
+                typeof(H) VAR = *vec_pop(stack);                               \
+                for (u8 i = 0; i < 4; i++) {                                   \
+                    if (VAR->child[i]) {                                       \
+                        vec_push(stack, VAR->child[i]);                        \
+                    }                                                          \
+                }                                                              \
+                DO;                                                            \
+            }                                                                  \
+            vec_free(stack);                                                   \
+        }                                                                      \
+    })
+
+// Elimina un hashmap de memoria
+//      @param h: Hashmap a eliminar
+static inline void hash_free(HashTree* h) {
+    hash_for_each(h, x, arena_del(&arena, (u8*)x, sizeof(HashTree)));
+}
