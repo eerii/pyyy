@@ -26,6 +26,7 @@ u32 seguinte_lexico(Arquivo* a) {
         // Comentarios de liña
         if (c == '\n' || c == '\t') {
             a->comentario_linha = false;
+            vec_clear(buf);
         }
         if (a->comentario_linha || c == '#') {
             a->comentario_linha = true;

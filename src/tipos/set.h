@@ -88,19 +88,15 @@ static inline bool set_ins(Set** m, SetKey key, Arena* a) {
 //      @param a: Primer set
 //      @param b: Segundo set
 static inline bool set_eq(const Set* a, const Set* b) {
-    if (a == b) {
+    if (a == b) 
         return true;
-    }
-    if (!a || !b) {
+    if (!a || !b) 
         return false;
-    }
-    if (a->key != b->key) {
+    if (a->key != b->key) 
         return false;
-    }
     for (u8 i = 0; i < 4; i++) {
-        if (!set_eq(a->child[i], b->child[i])) {
+        if (!set_eq(a->child[i], b->child[i])) 
             return false;
-        }
     }
     return true;
 }

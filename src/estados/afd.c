@@ -9,13 +9,13 @@ AFD afn_to_afd(const AFN* a) {
 
     // Calcula a clausura inicial
     Set* cl = afn_clausura(inicio);
-    set_for_each(cl, e, { printf("%p\n", e->key); });
+    set_for_each(cl, e, { log("%p\n", e->key); });
 
     // Símbolos posibles
     Str simbolos = afn_simbolos(a);
 
     vec_for_each(simbolos, s, {
-        printf("%c\n", s);
+        log("%c\n", s);
         // TODO: Calcular o movemento da clausura para o simbolo s
     });
 

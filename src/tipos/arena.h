@@ -87,7 +87,7 @@ static inline void arena_init(Arena* a) {
     a->inicio = (u8*)mmap(NULL, CHUNK * MAX_BLOCKS, PROT_NONE,
                           MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     if (a->inicio == MAP_FAILED) {
-        err("erro ao crear a arena de memoria: %d\n", errno);
+        err("erro ó crear a arena de memoria: %d\n", errno);
     }
     log("arena creada en %p\n", a->inicio);
 
@@ -128,7 +128,6 @@ static inline u8* arena_push(Arena* a, u64 n) {
                 a->eliminados = tn;
             }
 
-            printf("tumba %p %lu (queda %u)\n", mem, n, t->tam);
             return mem;
         }
         prev = t;
@@ -171,11 +170,10 @@ static inline u8* arena_pop(Arena* a, u64 n) {
 //      @param p: Punteiro da dirección na que empezar
 //      @param n: Cantidade de memoria a eliminar
 static inline void arena_del(Arena* a, u8* p, u32 n) {
-    printf("arena_del %p %d\n", p, n);
+    // TODO: Mellor defragmentación
 
     // Se o espazo libre é menor que o tamaño dunha tumba, aceptamos perdelo
     if ((u64)n < sizeof(Tumba)) {
-        printf("perdese tumba\n");
         return;
     }
 
@@ -184,7 +182,6 @@ static inline void arena_del(Arena* a, u8* p, u32 n) {
 
     // Se o punteiro está no final da arena, movemos o actual cara atrás
     if (p + (u64)n == a->actual) {
-        printf("movese memoria\n");
         a->actual = p;
         return;
     }
@@ -213,14 +210,12 @@ static inline void arena_del(Arena* a, u8* p, u32 n) {
             it = (Tumba*)min;
             it->tam = max - min;
             it->sig = sig;
-            printf("tumba agrandada %u\n", it->tam);
             return;
         }
 
         // Se non se superpon ou é posterior, engade a nova tumba
         if (it->sig == NULL) {
             it->sig = t;
-            printf("nova tumba %u\n", it->tam);
             return;
         }
 
