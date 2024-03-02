@@ -1,3 +1,4 @@
+CC = gcc
 CFLAGS = -Wall -std=c2x
 TARGET = practica_01
 DIRS = src src/tipos src/estados

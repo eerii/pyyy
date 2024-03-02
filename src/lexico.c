@@ -1,5 +1,3 @@
-#include <ctype.h>
-
 #include "lexico.h"
 #include "tipos/str.h"
 
@@ -11,7 +9,6 @@ u32 seguinte_lexico(Arquivo* a) {
     //      Mirar se podo usar regex en c
 
     i32 c;
-    u32 l = 0;
     static Str buf;
     if (buf.cap == 0) {
         vec_init_res(buf, 128);
@@ -33,11 +30,6 @@ u32 seguinte_lexico(Arquivo* a) {
         if (a->comentario_linha || c == '#') {
             a->comentario_linha = true;
             continue;
-        }
-
-        // Detectar nova liña
-        if (c == '\n') {
-            l++;
         }
     }
 

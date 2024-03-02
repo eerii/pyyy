@@ -206,7 +206,7 @@
         } else if (I < V.len) {                                                \
             ++V.len;                                                           \
             memmove(&V.data[I + 1], &V.data[I],                                \
-                    (V.len - (I - 1)) * sizeof(*V.data));                      \
+                    (V.len - (I - 1)) * sizeof(V.data[0]));                    \
             V.data[I] = X;                                                     \
         }                                                                      \
     } while (0)
@@ -220,7 +220,7 @@
         if (I < V.len) {                                                       \
             --V.len;                                                           \
             memmove(&V.data[I], &V.data[I + 1],                                \
-                    (V.len - I) * sizeof(*V.data));                            \
+                    (V.len - I) * sizeof(V.data[0]));                          \
         }                                                                      \
     } while (0)
 
@@ -254,7 +254,7 @@
 #define vec_free(V)                                                            \
     do {                                                                       \
         if (V.cap != 0)                                                        \
-            arena_del(&arena, (u8*)V.data, V.cap * sizeof(*V.data));           \
+            arena_del(&arena, (u8*)V.data, V.cap * sizeof(V.data[0]));         \
         V.len = 0;                                                             \
         V.cap = 0;                                                             \
     } while (0)

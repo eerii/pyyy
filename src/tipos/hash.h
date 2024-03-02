@@ -21,6 +21,7 @@
 typedef Str HashKey;
 typedef u32 HashValue;
 
+// Hashmap
 typedef struct HashTree HashTree;
 struct HashTree {
     HashTree* child[4];
@@ -28,9 +29,9 @@ struct HashTree {
     HashValue value;
 };
 
-// Función hash de 64 bits
+// Función hash de 64 bits para strings
 //       @param key: Chave a hashear
-static inline u64 hash(HashKey key) {
+static inline u64 hash_str(HashKey key) {
     u64 h = 0x100;
     for (u64 i = 0; i < key.len; i++) {
         h ^= key.data[i];
@@ -42,7 +43,7 @@ static inline u64 hash(HashKey key) {
 // Compara duas chaves
 //       @param a: Chave 1
 //       @param b: Chave 2
-static inline bool equals(HashKey a, HashKey b) {
+static inline bool equals_str(HashKey a, HashKey b) {
     return a.len == b.len && !memcmp(a.data, b.data, a.len);
 }
 
@@ -55,9 +56,9 @@ static inline HashValue* hash_ins(HashTree** m, HashKey key, Arena* a) {
     // Xeramos un hash a partir da chave indicada
     // Usamos dous bits da chave hash para elexir unha das catro ramas
     // En cada nivel, dous bits son shifteados (trie of hash bits)
-    for (u64 h = hash(key); *m; h <<= 2) {
+    for (u64 h = hash_str(key); *m; h <<= 2) {
         // Se atopa o elemento, devolve o valor
-        if (equals(key, (*m)->key)) {
+        if (equals_str(key, (*m)->key)) {
             return &(*m)->value;
         }
         // Se non, continua buscando

@@ -18,79 +18,52 @@
 // - Execución (imos pedindo o siguiente compoñente léxico ata o final)
 // - Finalización (liberar toda a memoria, feito grazas á arena)
 
+#include "estados/afd.h"
+#include "estados/afn.h"
 #include "lexico.h"
 #include "tipos/arena.h"
-#include "estados/afn.h"
-#include "estados/afd.h"
 
 // Definición da arena global
 Arena arena;
 
 i32 main() {
-    arena_init(&arena); 
+    arena_init(&arena);
 
     AFN aa = afn_atomic('a');
     AFN bb = afn_atomic('b');
     AFN cc = afn_or(&aa, &bb);
     AFN afn = afn_un_ou_mais(&cc);
 
-    VecEstado cl = afn_clausura(afn.inicio);
-     for (u32 i = 0; i < cl.len; ++i) {
-        printf("%p %d-%d\n", cl.data[i], cl.data[i]->trans[0], cl.data[i]->trans[1]);
-    }
-    printf("\n");
-    VecEstado cl2 = afn_clausura_set(&cl);
-    for (u32 i = 0; i < cl2.len; ++i) {
-        printf("%p %d-%d\n", cl2.data[i], cl2.data[i]->trans[0], cl2.data[i]->trans[1]);
-    }
+    afn_to_afd(&afn);
+    printf("hey\n");
 
-    printf("%d\n", afn_clausura_equals(&cl, &cl2));
-
-    Str simb = afn_simbolos(&afn);
-    vec_push(simb, '\0');
-    printf("%s\n", simb.data);
-
-    AFD afd = afn_to_afd(&afn);
-
-    FILE* graph = fopen("afn.dot", "w");
-    afn_graph("graph", &afn, graph);
-    fclose(graph);
-
-    return 0;
+    /* FILE* graph = fopen("afn.dot", "w"); */
+    /* afn_graph("graph", &afn, graph); */
+    /* fclose(graph); */
 
     const char* s = "ccab";
 
-    VecEstado vi, vs;
-    vec_init(vi);
-    vec_push(vi, afn.inicio);
-    vec_init(vs);
+    Set* vi = 0;
+    Set* vs = 0;
+    set_ins(&vi, afn.inicio, &arena);
 
     for (u32 i = 0; i < strlen(s); ++i) {
-        for (u32 j = 0; j < vi.len; ++j) {
-            /* afn_delta(vi.data[j], s[i], &vs); */
-        }
-
         printf("AFN: %c (%d)\n  actual:\n", s[i], s[i]);
-        for (u32 i = 0; i < vi.len; i++) {
-            const Estado* e = vi.data[i];
-            printf("    %p %d-%d\n", e, e->trans[0], e->trans[1]);
-        }
+        set_for_each(vi, e, printf("    %p %d-%d\n", e->key, e->key->trans[0], e->key->trans[1]));
         printf("  seguinte:\n");
-        for (u32 i = 0; i < vs.len; i++) {
-            const Estado* e = vs.data[i];
-            printf("    %p %d-%d\n", e, e->trans[0], e->trans[1]);
-        }
+        set_for_each(vs, e, printf("    %p %d-%d\n", e->key, e->key->trans[0], e->key->trans[1]));
         printf("\n\n");
 
-        VecEstado tmp = vi;
+        Set* tmp = vi;
         vi = vs;
         vs = tmp;
-        vec_clear(vs); 
+        set_free(vs); // TODO: Cambiar por clear
+        vs = 0;
     }
 
     bool aceptado = false;
-    vec_for_each(vi, e, aceptado |= e == afn.fin);
-    printf("Aceptado: %s\n\n", aceptado ? "true" : "false"); 
+    set_for_each(vi, e, aceptado |= e->key == afn.fin);
+    printf("Aceptado: %s\n\n", aceptado ? "true" : "false");
 
     afn_free(&afn);
 

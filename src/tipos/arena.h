@@ -128,7 +128,7 @@ static inline u8* arena_push(Arena* a, u64 n) {
                 a->eliminados = tn;
             }
 
-            log("atopouse sitio nunha tumba: %p\n", mem);
+            printf("tumba %p %lu (queda %u)\n", mem, n, t->tam);
             return mem;
         }
         prev = t;
@@ -161,8 +161,9 @@ static inline u8* arena_push_zero(Arena* a, u64 n) {
 // Elimina bytes do final do stack
 //      @param a: Arena de memoria
 //      @param n: Cantidade de memoria a eliminar
-static inline void arena_pop(Arena* a, u64 n) {
+static inline u8* arena_pop(Arena* a, u64 n) {
     a->actual = n > a->actual - a->inicio ? a->inicio : a->actual - n;
+    return a->actual;
 }
 
 // Elimina unha area de memoria do medio da arena e crea unha tumba no seu lugar
@@ -170,8 +171,11 @@ static inline void arena_pop(Arena* a, u64 n) {
 //      @param p: Punteiro da dirección na que empezar
 //      @param n: Cantidade de memoria a eliminar
 static inline void arena_del(Arena* a, u8* p, u32 n) {
+    printf("arena_del %p %d\n", p, n);
+
     // Se o espazo libre é menor que o tamaño dunha tumba, aceptamos perdelo
     if ((u64)n < sizeof(Tumba)) {
+        printf("perdese tumba\n");
         return;
     }
 
@@ -180,6 +184,7 @@ static inline void arena_del(Arena* a, u8* p, u32 n) {
 
     // Se o punteiro está no final da arena, movemos o actual cara atrás
     if (p + (u64)n == a->actual) {
+        printf("movese memoria\n");
         a->actual = p;
         return;
     }
@@ -208,12 +213,14 @@ static inline void arena_del(Arena* a, u8* p, u32 n) {
             it = (Tumba*)min;
             it->tam = max - min;
             it->sig = sig;
+            printf("tumba agrandada %u\n", it->tam);
             return;
         }
 
         // Se non se superpon ou é posterior, engade a nova tumba
         if (it->sig == NULL) {
             it->sig = t;
+            printf("nova tumba %u\n", it->tam);
             return;
         }
 

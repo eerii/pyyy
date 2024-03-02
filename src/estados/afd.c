@@ -8,7 +8,8 @@ AFD afn_to_afd(const AFN* a) {
     AFD d = {inicio, NULL};
 
     // Calcula a clausura inicial
-    VecEstado cl = afn_clausura(inicio);
+    Set* cl = afn_clausura(inicio);
+    set_for_each(cl, e, { printf("%p\n", e->key); });
 
     // Símbolos posibles
     Str simbolos = afn_simbolos(a);
