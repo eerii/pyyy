@@ -7,7 +7,7 @@ Arquivo* abrir_arquivo(const char* nome) {
         err("non se puido abrir o arquivo '%s'\n", nome);
         return NULL;
     }
-    log("abriuse o arquivo %s\n", nome);
+    dbg("abriuse o arquivo %s\n", nome);
 
     Arquivo* arquivo = (Arquivo*)arena_push(&arena, sizeof(Arquivo));
     arquivo->file = file;
@@ -19,7 +19,7 @@ i32 seguinte_caracter(Arquivo* a) {
     i32 c = fgetc(a->file);
     if (c == EOF) {
         fclose(a->file);
-        log("%s", "chegouse ó final do arquivo\n");
+        dbg("%s", "chegouse ó final do arquivo\n");
     }
 
     return c;

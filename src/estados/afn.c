@@ -63,8 +63,7 @@ void _afn_graph_trans(const Estado* e, u8 to, FILE* f) {
 
 // Escribe as transicións dos estados alcanzables
 void _afn_graph_alcanzables(const Estado* e, FILE* f) {
-    VecEstado s;
-    vec_init(s);
+    VecEstado s = vec_new(VecEstado);
     _afn_visit(&s, e);
     vec_for_each(s, e, {
         for (u8 i = 0; i < _trans_count(e); i++) {
@@ -157,8 +156,7 @@ AFN afn_cero_ou_un(const AFN* a) {
 
 // Calcula a clausura para un estado
 VecEstado afn_clausura(const Estado* e) {
-    VecEstado c;
-    vec_init(c);
+    VecEstado c = vec_new(VecEstado);
     vec_push(c, e);
     _afn_clausura_rec(&c, e);
     return c;
@@ -166,8 +164,7 @@ VecEstado afn_clausura(const Estado* e) {
 
 // Calcula a clausura para múltiples estados
 VecEstado afn_clausura_set(const VecEstado* s) {
-    VecEstado c;
-    vec_init(c);
+    VecEstado c = vec_new(VecEstado);
     vec_for_each((*s), e, {
         vec_push_unique(c, e);
         _afn_clausura_rec(&c, e);
@@ -177,11 +174,9 @@ VecEstado afn_clausura_set(const VecEstado* s) {
 
 // Obtén os símbolos usados
 Str afn_simbolos(const AFN* a) {
-    Str simbolos;
-    vec_init(simbolos);
+    Str simbolos = vec_new(Str);
 
-    VecEstado s;
-    vec_init(s);
+    VecEstado s = vec_new(VecEstado);
     vec_push(s, a->inicio);
     _afn_visit(&s, a->inicio);
 
@@ -200,8 +195,7 @@ Str afn_simbolos(const AFN* a) {
 
 // Libera a memoria dun afn
 void afn_free(AFN* a) {
-    VecEstado s;
-    vec_init(s);
+    VecEstado s = vec_new(VecEstado);
     vec_push(s, a->inicio);
     _afn_visit(&s, a->inicio);
     vec_for_each(s, e, arena_del(&arena, (u8*)(e), sizeof(Estado)));
@@ -210,8 +204,7 @@ void afn_free(AFN* a) {
 
 // Representa o autómata en formato graphviz
 void afn_graph(const char* regex, const AFN* a, FILE* f) {
-    VecEstado s;
-    vec_init(s);
+    VecEstado s = vec_new(VecEstado);
     vec_push(s, a->inicio);
 
     fprintf(f,

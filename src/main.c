@@ -18,6 +18,12 @@
 // - Execución (imos pedindo o siguiente compoñente léxico ata o final)
 // - Finalización (liberar toda a memoria, feito grazas á arena)
 
+// Revisar C23
+// - constexpr
+// - compound literals
+// - auto
+// - varadic functions (log etc)
+
 #include "tipos/arena.h"
 
 #include "estados/afd.h"
@@ -43,9 +49,8 @@ i32 main() {
 
     const char* s = "ccab";
 
-    VecEstado vi, vs;
-    vec_init_from_n(vi, afn.inicio, 1);
-    vec_init(vs);
+    VecEstado vi = vec_new_from_n(VecEstado, afn.inicio, 1);
+    VecEstado vs = vec_new(VecEstado);
 
     for (u32 i = 0; i < strlen(s); ++i) {
         printf("\n%c (%d)\n  actual:\n", s[i], s[i]);
@@ -82,7 +87,7 @@ i32 main() {
     Tumba* t = arena.eliminados;
     u32 num_tumbas = 0;
     u32 tam_tumbas = 0;
-    log("%s", "tumbas:");
+    log("tumbas:");
     while (t) {
         printf("%u:%u,", num_tumbas++, t->tam);
         tam_tumbas += t->tam;

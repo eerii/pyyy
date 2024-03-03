@@ -8,6 +8,9 @@ DST = bin
 
 all: $(TARGET)
 
+debug: CFLAGS += -DDEBUG
+debug: $(TARGET)
+
 $(TARGET): $(SRC)
 	@ mkdir -p $(DST)
 	@ $(CC) $(CFLAGS) -o $(DST)/$(TARGET) $(SRC) -I $(INCLUDE)

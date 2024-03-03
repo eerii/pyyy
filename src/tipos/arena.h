@@ -70,11 +70,11 @@ static inline void arena_grow(Arena* a) {
     assert(a->fin < a->inicio + CHUNK * MAX_BLOCKS);
 
     if (mprotect(a->fin, CHUNK, PROT_READ | PROT_WRITE) != 0) {
-        err("erro ó expandir a arena de memoria: %d\n", errno);
+        err("non se puido expandir a arena de memoria: %d\n", errno);
     }
 
     a->fin = a->fin + CHUNK;
-    log("arena extendida ata %p\n", a->fin);
+    dbg("arena extendida ata %p\n", a->fin);
 }
 
 // Crea unha nova arena de memoria
@@ -87,9 +87,9 @@ static inline void arena_init(Arena* a) {
     a->inicio = (u8*)mmap(NULL, CHUNK * MAX_BLOCKS, PROT_NONE,
                           MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     if (a->inicio == MAP_FAILED) {
-        err("erro ó crear a arena de memoria: %d\n", errno);
+        err("non se puido crear a arena de memoria: %d\n", errno);
     }
-    log("arena creada en %p\n", a->inicio);
+    dbg("arena creada en %p\n", a->inicio);
 
     // Reservamos a primeira páxina de memoria
     a->fin = a->inicio;
@@ -234,5 +234,5 @@ static inline void arena_clear(Arena* a) { a->actual = a->inicio; }
 //      @param a: Arena de memoria
 static inline void arena_free(Arena* a) {
     munmap(a->inicio, CHUNK * MAX_BLOCKS);
-    log("arena liberada en %p\n", a->inicio);
+    dbg("arena liberada en %p\n", a->inicio);
 }

@@ -87,7 +87,7 @@ static inline HashValue* hash_ins(HashTree** m, HashKey key, Arena* a) {
             vec_init(stack);                                                   \
             vec_push(stack, H);                                                \
             while (stack.len > 0) {                                            \
-                typeof(H) VAR = *vec_pop(stack);                               \
+                auto VAR = *vec_pop(stack);                                    \
                 for (u8 i = 0; i < 4; i++) {                                   \
                     if (VAR->child[i]) {                                       \
                         vec_push(stack, VAR->child[i]);                        \

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -60,24 +61,6 @@
 // Operadores e delimitadores (usamos ASCII)
 // Espazos en blanco *non* son tokens
 
-// ··········
-// Utilidades
-// ··········
-
-#define C_RESET "\x1b[0m"
-#define C_RED "\x1b[31m"
-#define C_GREEN "\x1b[32m"
-#define C_YELLOW "\x1b[33m"
-#define C_BLUE "\x1b[34m"
-#define C_BOLD "\x1b[1m"
-
-#define log(fmt, args...)                                                      \
-    printf(C_BLUE C_BOLD "[" __FILE__ ":%d] " C_RESET fmt, __LINE__, args)
-#define err(fmt, args...)                                                      \
-    printf(C_RED C_BOLD "[" __FILE__ ":%d] " C_RESET fmt, __LINE__, args)
-
-#define is_compatible(x, T) _Generic((x), T: 1, default: 0)
-
 // ·····
 // Tipos
 // ·····
@@ -91,3 +74,36 @@
 #define u16 uint16_t
 #define u32 uint32_t
 #define u64 uint64_t
+
+// ··········
+// Utilidades
+// ··········
+
+#define C_RESET "\x1b[0m"
+#define C_RED "\x1b[31m"
+#define C_GREEN "\x1b[32m"
+#define C_YELLOW "\x1b[33m"
+#define C_BLUE "\x1b[34m"
+#define C_BOLD "\x1b[1m"
+
+#define PFILE(COLOR) COLOR C_BOLD "[" __FILE__ ":%d] " C_RESET
+#define PRINT_I(COLOR, FMT) printf(PFILE(COLOR) "%s", __LINE__, FMT)
+#define PRINT_II(COLOR, FMT, ...)                                              \
+    printf(PFILE(COLOR) FMT, __LINE__, __VA_ARGS__)
+#define print(COLOR, FMT, ...)                                                 \
+    PRINT_I##__VA_OPT__(I)(COLOR, FMT __VA_OPT__(, ) __VA_ARGS__)
+
+#ifdef DEBUG
+#define dbg(FMT, ...) print(C_YELLOW, FMT, __VA_ARGS__)
+#else
+#define dbg(...)
+#endif
+#define log(FMT, ...) print(C_BLUE, FMT, __VA_ARGS__)
+#define err(FMT, ...) print(C_RED, FMT, __VA_ARGS__)
+
+#define e_compatible(x, T) _Generic((x), T: 1, default: 0)
+
+// Se usamos clang (non soporta todo c23 todavía), alias auto a __auto_type
+#ifdef __clang__
+#define auto __auto_type
+#endif

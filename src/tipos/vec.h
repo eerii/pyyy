@@ -47,7 +47,6 @@
 //      @param V: Vector a inicializar
 //      @param X: Array de elementos co que inicializalo
 //      @param N: Cantidade de elementos
-// TODO: Mover os vec_init para que devolvan V
 #define vec_init_from_n(V, X, N)                                               \
     ({                                                                         \
         V.data = (typeof(V.data))&(X);                                         \
@@ -76,6 +75,40 @@
 // Inicialización por defecto (reserva `RESERVA_POR_DEFECTO_VEC` elementos)
 //      @param V: Vector a inicializar
 #define vec_init(V) vec_init_res(V, RESERVA_POR_DEFECTO_VEC)
+
+// Crea un novo vector dende un array preexistente
+//      @param VT: Tipo do vector
+//      @param X: Array de elementos co que inicializalo
+//      @param N: Cantidade de elementos
+//      @return: Vector
+#define vec_new_from_n(VT, X, N)                                               \
+    ({                                                                         \
+        VT _v;                                                                 \
+        vec_init_from_n(_v, X, N);                                             \
+        _v;                                                                    \
+    })
+
+// Crea un novo vector dende un array preexistente
+//      @param VT: Tipo do vector
+//      @param X: Array de elementos co que inicializalo
+//      @return: Vector
+#define vec_new_from(VT, X) vec_new_from_n(VT, vec_countof(VT, X))
+
+// Crea un novo vector reservando memoria
+//      @param VT: Tipo do vector
+//      @param N: Cantidade de elementos que reservar inicialmente
+//      @return: Vector
+#define vec_new_res(VT, N)                                                     \
+    ({                                                                         \
+        VT _v;                                                                 \
+        vec_init_res(_v, N);                                                   \
+        _v;                                                                    \
+    })
+
+// Crea un novo vector por defecto
+//      @param VT: Tipo do vector
+//      @return: Vector
+#define vec_new(VT) vec_new_res(VT, RESERVA_POR_DEFECTO_VEC)
 
 // Redimensiona a capacidade do vector (pode movelo en memoria)
 // Se é un array estático, crea un novo array dinámico do tamaño indicado
@@ -233,7 +266,7 @@
 #define vec_for_each(V, VAR, DO)                                               \
     ({                                                                         \
         for (u32 _i = 0; _i < V.len; ++_i) {                                   \
-            typeof(*V.data) VAR = V.data[_i];                                  \
+            auto VAR = V.data[_i];                                             \
             DO;                                                                \
         }                                                                      \
     })
