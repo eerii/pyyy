@@ -37,6 +37,13 @@ bool _estado_afd_eq(const EstadoAFD* a, const EstadoAFD* b) {
     return a->hash == b->hash;
 }
 
+// Compara se dúas transicións afd son iguais
+//      @param a: Transición 1
+//      @param b: Transición 2
+bool _trans_afd_eq(const TransAFD* a, const TransAFD* b) {
+    return a->dende == b->dende && a->ata == b->ata && a->c == b->c;
+}
+
 // Engade unha clausura a un AFD coma un novo estado
 void _afd_push(AFD* a, Clausura* c, bool f) {
     afd_add_estado(a, (EstadoAFD){.hash = c->hash, .final = f});
@@ -62,7 +69,8 @@ void afd_add_trans(AFD* a, const EstadoAFD* dende, const EstadoAFD* ata,
         return;
     }
 
-    vec_push(a->trans, ((TransAFD){.dende = id, .ata = ia, .c = c}));
+    vec_push_unique(a->trans, ((TransAFD){.dende = id, .ata = ia, .c = c}),
+                    _trans_afd_eq);
 }
 
 // Convirte un AFN nun AFD
@@ -76,10 +84,6 @@ AFD afn_to_afd(const AFN* a) {
     // Fai un bucle ata que non queden estados pendentes
     VecEstado ci = afn_clausura(a->inicio);
     vec_push(estados, ((Clausura){.hash = (u32)_hash_clausura(&ci), .v = ci}));
-
-    log("estado %lu: ", _hash_clausura(&ci) & 0xfff);
-    vec_for_each(ci, e, { printf("%lu,", (u64)e & 0xfff); });
-    printf("\n");
 
     // Engade o estado inciial ó AFD
     AFD afd = ((AFD){.estados = vec_new(VecEstadoAFD),
@@ -103,14 +107,9 @@ AFD afn_to_afd(const AFN* a) {
             // Comprobamos que o estado definido pola clausura é novo
             u32 it = vec_find(estados, cs, _clausura_eq);
             if (it == estados.len) {
-                // TODO: Estados finais
                 _afd_push(&afd, &cs, afn_final(a, &cs.v));
                 vec_push(estados, cs);
             }
-
-            log("(%c) estado %u: ", s, c->hash & 0xfff);
-            vec_for_each(csig, e, { printf("%lu,", (u64)e & 0xfff); });
-            printf(" (%lu)\n", _hash_clausura(&csig) & 0xfff);
 
             // Engadimos a transición
             const EstadoAFD* ata = it == estados.len
@@ -123,12 +122,12 @@ AFD afn_to_afd(const AFN* a) {
     }
 
     // TODO: Liberar vectores
-    log("afd: estados - %d, trans - %d\n", afd.estados.len, afd.trans.len);
-    log("estados:\n");
-    vec_for_each(afd.estados, e,
-                 log("%u%s\n", e.hash & 0xfff, e.final ? " (final)" : ""));
-    log("transicions:\n");
-    vec_for_each(afd.trans, t, log("%u -%c-> %u\n", t.dende, t.c, t.ata));
+    dbg("afd: estados - %d, trans - %d\n", afd.estados.len, afd.trans.len);
+    dbg("estados:\n");
+    vec_for_each(afd.estados, e _U_,
+                 dbg("%u%s\n", e.hash & 0xfff, e.final ? " (final)" : ""));
+    dbg("transicions:\n");
+    vec_for_each(afd.trans, t _U_, dbg("%u -%c-> %u\n", t.dende, t.c, t.ata));
     return afd;
 }
 

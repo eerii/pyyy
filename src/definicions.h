@@ -107,3 +107,6 @@
 #ifdef __clang__
 #define auto __auto_type
 #endif
+
+// Variables que poden non utilizarse
+#define _U_ __attribute__((unused))

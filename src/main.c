@@ -38,20 +38,23 @@ i32 main() {
 
     AFN aa = afn_atomic('a');
     AFN bb = afn_atomic('b');
-    AFN cc = afn_or(&aa, &bb);
+    AFN bbb = afn_and(&aa, &bb);
+    AFN ee = afn_atomic('a');
+    AFN dd = afn_atomic('a');
+    AFN aaa = afn_cero_ou_mais(&dd);
+    AFN ddd = afn_and(&ee, &aaa);
+    AFN cc = afn_or(&bbb, &ddd);
+
     AFN afn = afn_un_ou_mais(&cc);
+    AFD afd _U_ = afn_to_afd(&afn);
 
-    afn_to_afd(&afn);
-
-    FILE* graph = fopen("docs/afn.dot", "w");
-    afn_graph("graph", &afn, graph);
+    /*FILE* graph = fopen("docs/afn.dot", "w");
+    afn_graph("(ab|aa*)+", &afn, graph);
     fclose(graph);
-
-    AFD afd = afn_to_afd(&afn);
 
     FILE* graph2 = fopen("docs/afd.dot", "w");
     afd_graph(&afd, graph2);
-    fclose(graph2);
+    fclose(graph2);*/
 
     const char* s = "ccab";
 
