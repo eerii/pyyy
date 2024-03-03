@@ -110,6 +110,11 @@
 //      @return: Vector
 #define vec_new(VT) vec_new_res(VT, RESERVA_POR_DEFECTO_VEC)
 
+// Crea unha copia dun vector
+//      @param V: Vector a copiar
+//      @return: Vector
+#define vec_copy(V) vec_new_from_n(typeof(V), V.data, V.len)
+
 // Redimensiona a capacidade do vector (pode movelo en memoria)
 // Se é un array estático, crea un novo array dinámico do tamaño indicado
 //      @param V: Vector a redimensionar
@@ -152,21 +157,14 @@
     ({                                                                         \
         int I;                                                                 \
         for (I = 0; I < V.len; ++I) {                                          \
-            if (F(V.data[I], X)) {                                             \
+            if (F(&V.data[I], &X)) {                                           \
                 break;                                                         \
             }                                                                  \
         }                                                                      \
         I;                                                                     \
     })
 
-#define _EQ(a, b) (a == b)
-
-// Busca un elemento no vector, devolve o índice da primeira ocurrencia
-// Se non o atopa, I será V.len
-//      @param V: Vector no que buscar
-//      @param X: Elemento a buscar
-//      @return: Posición do elemento
-#define vec_find_eq(V, X) vec_find(V, X, _EQ)
+#define EQ(A, B) (*A == *B)
 
 // Engade un elemento ó final do vector
 // Se non cabe, redimensiona
@@ -183,10 +181,11 @@
 // Engade un elemento ó final do vector se non existe
 //      @param V: Vector no que engadir
 //      @param X: Elemento a engadir
+//      @param F(a, b): Función de comparación
 //      @return: True se é un elemento único e se engade
-#define vec_push_unique(V, X)                                                  \
+#define vec_push_unique(V, X, F)                                               \
     ({                                                                         \
-        u32 it = vec_find_eq(V, X);                                            \
+        u32 it = vec_find(V, X, F);                                            \
         bool _unique = it == V.len;                                            \
         if (_unique)                                                           \
             vec_push(V, X);                                                    \

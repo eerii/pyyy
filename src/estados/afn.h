@@ -67,6 +67,16 @@ AFN afn_un_ou_mais(const AFN* a);
 //      @param a Estado
 AFN afn_cero_ou_un(const AFN* a);
 
+// Obtén as transicións dun conxunto de estados con un caracter
+//      @param s Conxunto de estados
+//      @param c Caracter
+VecEstado afn_delta(const VecEstado* s, Trans c);
+
+// Visita tódolos estados e chea o vector con eles
+//      @param s Conxunto de estados
+//      @param e Estado inicial
+void afn_visit(VecEstado* s, const Estado* e);
+
 // Calcula a clausura de epsilon para un estado
 //      @param e Estado do que calcular a clausura
 VecEstado afn_clausura(const Estado* e);

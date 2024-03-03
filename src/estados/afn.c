@@ -36,15 +36,6 @@ bool _afn_add(Estado* dende, char c, Estado* ata) {
     return true;
 }
 
-// Visita tódolos estados e chea un vector con eles
-void _afn_visit(VecEstado* s, const Estado* e) {
-    for (i8 i = 0; i < _trans_count(e); i++) {
-        if (vec_push_unique((*s), e->to[i])) {
-            _afn_visit(s, e->to[i]);
-        }
-    }
-}
-
 // Escribe unha transición no arquivo graphviz
 void _afn_graph_trans(const Estado* e, u8 to, FILE* f) {
     switch (e->trans[to]) {
@@ -64,7 +55,7 @@ void _afn_graph_trans(const Estado* e, u8 to, FILE* f) {
 // Escribe as transicións dos estados alcanzables
 void _afn_graph_alcanzables(const Estado* e, FILE* f) {
     VecEstado s = vec_new(VecEstado);
-    _afn_visit(&s, e);
+    afn_visit(&s, e);
     vec_for_each(s, e, {
         for (u8 i = 0; i < _trans_count(e); i++) {
             _afn_graph_trans(e, i, f);
@@ -79,7 +70,7 @@ void _afn_clausura_rec(VecEstado* s, const Estado* e) {
         if (e->trans[i] != TRANS_EPSILON) {
             continue;
         }
-        if (vec_push_unique((*s), e->to[i])) {
+        if (vec_push_unique((*s), e->to[i], EQ)) {
             _afn_clausura_rec(s, e->to[i]);
         }
     }
@@ -154,6 +145,30 @@ AFN afn_cero_ou_un(const AFN* a) {
     return c;
 }
 
+// Obtén as transicións dun conxunto de estados con un caracter
+VecEstado afn_delta(const VecEstado* s, Trans c) {
+    VecEstado sig = vec_new(VecEstado);
+
+    vec_for_each((*s), e, {
+        for (u8 i = 0; i < _trans_count(e); i++) {
+            if (e->trans[i] == c) {
+                vec_push_unique(sig, e->to[i], EQ);
+            }
+        }
+    });
+
+    return sig;
+}
+
+// Visita tódolos estados e chea un vector con eles
+void afn_visit(VecEstado* s, const Estado* e) {
+    for (i8 i = 0; i < _trans_count(e); i++) {
+        if (vec_push_unique((*s), e->to[i], EQ)) {
+            afn_visit(s, e->to[i]);
+        }
+    }
+}
+
 // Calcula a clausura para un estado
 VecEstado afn_clausura(const Estado* e) {
     VecEstado c = vec_new(VecEstado);
@@ -166,7 +181,7 @@ VecEstado afn_clausura(const Estado* e) {
 VecEstado afn_clausura_set(const VecEstado* s) {
     VecEstado c = vec_new(VecEstado);
     vec_for_each((*s), e, {
-        vec_push_unique(c, e);
+        vec_push_unique(c, e, EQ);
         _afn_clausura_rec(&c, e);
     });
     return c;
@@ -178,7 +193,7 @@ Str afn_simbolos(const AFN* a) {
 
     VecEstado s = vec_new(VecEstado);
     vec_push(s, a->inicio);
-    _afn_visit(&s, a->inicio);
+    afn_visit(&s, a->inicio);
 
     vec_for_each(s, e, {
         if (e->trans[0] > TRANS_EPSILON) {
@@ -197,7 +212,7 @@ Str afn_simbolos(const AFN* a) {
 void afn_free(AFN* a) {
     VecEstado s = vec_new(VecEstado);
     vec_push(s, a->inicio);
-    _afn_visit(&s, a->inicio);
+    afn_visit(&s, a->inicio);
     vec_for_each(s, e, arena_del(&arena, (u8*)(e), sizeof(Estado)));
     vec_free(s);
 }
@@ -215,7 +230,7 @@ void afn_graph(const char* regex, const AFN* a, FILE* f) {
             "    node [shape = circle]\n",
             regex, (void*)a->fin);
 
-    _afn_visit(&s, a->inicio);
+    afn_visit(&s, a->inicio);
     vec_for_each(s, e, {
         for (u32 j = 0; j < _trans_count(e); j++) {
             _afn_graph_trans(e, j, f);
