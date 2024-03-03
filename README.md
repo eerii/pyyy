@@ -9,8 +9,11 @@
     - [x] hash map
 - [ ] autómatas formais
     - [x] afn epsilon
-    - [x] calculo clausuras
-    - [ ] afn a afd
+    - [x] afn a afd
+        - [x] calculo clausuras
+        - [x] transicións
+        - [x] crear afd
+        - [ ] minimizar
     - [ ] executar afd
     - [ ] regex a afn
         - [ ] clases de caracteres (numeros, letras...)

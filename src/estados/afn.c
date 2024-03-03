@@ -187,6 +187,11 @@ VecEstado afn_clausura_set(const VecEstado* s) {
     return c;
 }
 
+// Comproba se a clausura contén o estado final
+bool afn_final(const AFN* a, const VecEstado* c) {
+    return vec_find((*c), a->fin, EQ) != c->len;
+}
+
 // Obtén os símbolos usados
 Str afn_simbolos(const AFN* a) {
     Str simbolos = vec_new(Str);

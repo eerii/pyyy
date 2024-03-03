@@ -155,7 +155,7 @@
 //      @return: Posición do elemento
 #define vec_find(V, X, F)                                                      \
     ({                                                                         \
-        int I;                                                                 \
+        u32 I;                                                                 \
         for (I = 0; I < V.len; ++I) {                                          \
             if (F(&V.data[I], &X)) {                                           \
                 break;                                                         \

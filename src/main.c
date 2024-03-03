@@ -43,9 +43,15 @@ i32 main() {
 
     afn_to_afd(&afn);
 
-    /* FILE* graph = fopen("afn.dot", "w"); */
-    /* afn_graph("graph", &afn, graph); */
-    /* fclose(graph); */
+    FILE* graph = fopen("docs/afn.dot", "w");
+    afn_graph("graph", &afn, graph);
+    fclose(graph);
+
+    AFD afd = afn_to_afd(&afn);
+
+    FILE* graph2 = fopen("docs/afd.dot", "w");
+    afd_graph(&afd, graph2);
+    fclose(graph2);
 
     const char* s = "ccab";
 

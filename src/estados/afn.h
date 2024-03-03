@@ -42,59 +42,64 @@ typedef struct {
 
 // O autómata finito máis pequeno
 // Recoñece un caracter c e transiciona ó estado final
-//      @param c Caracter
+//      @param c: Caracter
 AFN afn_atomic(char c);
 
 // Concatenación (ab)
-//      @param a Primeiro estado
-//      @param b Segundo estado
+//      @param a: Primeiro estado
+//      @param b: Segundo estado
 AFN afn_and(const AFN* a, const AFN* b);
 
 // Alternancia (a|b)
-//      @param a Primeiro estado
-//      @param b Segundo estado
+//      @param a: Primeiro estado
+//      @param b: Segundo estado
 AFN afn_or(const AFN* a, const AFN* b);
 
 // Kleene, cero ou mais (a*)
-//      @param a Estado
+//      @param a: Estado
 AFN afn_cero_ou_mais(const AFN* a);
 
 // Positivo, un ou mais (a+)
-//      @param a Estado
+//      @param a: Estado
 AFN afn_un_ou_mais(const AFN* a);
 
 // Opcional, cero ou un (a?)
-//      @param a Estado
+//      @param a: Estado
 AFN afn_cero_ou_un(const AFN* a);
 
 // Obtén as transicións dun conxunto de estados con un caracter
-//      @param s Conxunto de estados
-//      @param c Caracter
+//      @param s: Conxunto de estados
+//      @param c: Caracter
 VecEstado afn_delta(const VecEstado* s, Trans c);
 
 // Visita tódolos estados e chea o vector con eles
-//      @param s Conxunto de estados
-//      @param e Estado inicial
+//      @param s: Conxunto de estados
+//      @param e: Estado inicial
 void afn_visit(VecEstado* s, const Estado* e);
 
 // Calcula a clausura de epsilon para un estado
-//      @param e Estado do que calcular a clausura
+//      @param e: Estado do que calcular a clausura
 VecEstado afn_clausura(const Estado* e);
 
 // Calcula a clausura de epsilon para un conxunto de estados
-//      @param v Conjunto de estados
+//      @param v: Conxunto de estados
 VecEstado afn_clausura_set(const VecEstado* s);
 
+// Comproba se a clausura contén o estado final
+//      @param a: Autómata
+//      @param c: Clausura
+bool afn_final(const AFN* a, const VecEstado* c);
+
 // Obtén unha lista dos símbolos utilizados no AFN
-//      @param a Autómata
+//      @param a: Autómata
 Str afn_simbolos(const AFN* a);
 
 // Libera a memoria dun afn
-//      @param a Autómata a liberar
+//      @param a: Autómata a liberar
 void afn_free(AFN* a);
 
 // Representa o autómata en formato graphviz
-//      @param regex Expresión regular
-//      @param a Autómata a representar
-//      @param f Ficheiro no que gardar a representación
+//      @param regex: Expresión regular
+//      @param a: Autómata a representar
+//      @param f: Ficheiro no que gardar a representación
 void afn_graph(const char* regex, const AFN* a, FILE* f);
