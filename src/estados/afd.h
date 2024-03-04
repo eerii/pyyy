@@ -1,3 +1,6 @@
+// Autómata finito determinado
+// Acompaña ó AFN, máis fácil de executar
+
 #pragma once
 
 #include "afn.h"

@@ -27,7 +27,7 @@
 #include "tipos/arena.h"
 
 #include "estados/afd.h"
-#include "estados/afn.h"
+#include "estados/regex.h"
 #include "lexico.h"
 
 // Definición da arena global
@@ -36,20 +36,12 @@ Arena arena;
 i32 main() {
     arena_init(&arena);
 
-    AFN aa = afn_atomic('a');
-    AFN bb = afn_atomic('b');
-    AFN bbb = afn_and(&aa, &bb);
-    AFN ee = afn_atomic('a');
-    AFN dd = afn_atomic('a');
-    AFN aaa = afn_cero_ou_mais(&dd);
-    AFN ddd = afn_and(&ee, &aaa);
-    AFN cc = afn_or(&bbb, &ddd);
-
-    AFN afn = afn_un_ou_mais(&cc);
+    const char* regex = "(ab|aa*)+";
+    AFN afn = regex_to_afn(regex);
     AFD afd _U_ = afn_to_afd(&afn);
 
     /*FILE* graph = fopen("docs/afn.dot", "w");
-    afn_graph("(ab|aa*)+", &afn, graph);
+    afn_graph(regex, &afn, graph);
     fclose(graph);
 
     FILE* graph2 = fopen("docs/afd.dot", "w");

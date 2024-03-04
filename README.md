@@ -15,7 +15,7 @@
         - [x] crear afd
         - [ ] minimizar
     - [ ] executar afd
-    - [ ] regex a afn
+    - [x] regex a afn
         - [ ] clases de caracteres (numeros, letras...)
 - [ ] símbolos especiais
     - [ ] NEWLINE - liñas lóxicas
