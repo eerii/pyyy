@@ -79,6 +79,7 @@
 // Utilidades
 // ··········
 
+// Cores de consola
 #define C_RESET "\x1b[0m"
 #define C_RED "\x1b[31m"
 #define C_GREEN "\x1b[32m"
@@ -86,6 +87,7 @@
 #define C_BLUE "\x1b[34m"
 #define C_BOLD "\x1b[1m"
 
+// Impresión varádica e con diferentes tipos
 #define PFILE(COLOR) COLOR C_BOLD "[" __FILE__ ":%d] " C_RESET
 #define PRINT_I(COLOR, FMT) printf(PFILE(COLOR) "%s", __LINE__, FMT)
 #define PRINT_II(COLOR, FMT, ...)                                              \
@@ -101,9 +103,18 @@
 #define log(FMT, ...) print(C_BLUE, FMT, __VA_ARGS__)
 #define err(FMT, ...) print(C_RED, FMT, __VA_ARGS__)
 
+// Macro que compara dous valores (pasados como referencia)
 #define EQ(A, B) (*A == *B)
 
-#define COMPATIBLE(x, T) _Generic((x), T: 1, default: 0)
+// Comproba se un valor x é compatible co tipo T
+#define COMPATIBLE(X, T) _Generic((X), T: true, default: false)
+
+// Macro condicional
+// So executa a función se *non* ten argumentos
+#define _IF_NOT_TEST(...) __VA_ARGS__
+#define _IF_NOT_TEST0(...) __VA_ARGS__
+#define _IF_NOT_TEST1(...)
+#define IF_NOT(C, ...) _IF_NOT_TEST##C(__VA_ARGS__)
 
 // Se usamos clang (non soporta todo c23 todavía), alias auto a __auto_type
 #ifdef __clang__

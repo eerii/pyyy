@@ -3,13 +3,19 @@
 
 #pragma once
 
+#include "../tipos/hash.h"
 #include "afn.h"
 
+typedef struct EstadoAFD EstadoAFD;
+
+typedef HashTree(Trans, EstadoAFD*, TransEstado) HashTransEstado;
+
 // Estado nun AFD
-typedef struct {
+struct EstadoAFD {
     u32 hash;
     bool final;
-} EstadoAFD;
+    HashTransEstado* trans;
+};
 
 // Transición nun AFD
 // Dende e ata son os índices do vector de estados (non os hashes)

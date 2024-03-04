@@ -21,7 +21,7 @@
 #define TRANS_EPSILON 2
 #define TRANS_LETRA 3 // TODO: Engadir soporte para clases
 #define TRANS_DIXITO 4
-typedef char Trans;
+typedef u8 Trans;
 
 // Representa un estado do autómata
 // Pode ter 0, 1 ou dúas transicións (marcadas por TRANS_NONE)

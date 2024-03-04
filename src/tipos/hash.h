@@ -18,12 +18,18 @@
 // É recomendable facer un typedef co tipo que se vaia a utilizar para que o
 // compilador entenda que múltiples instancias son do mesmo tipo e poder
 // utilizalo como parámetro en funcións convencionais
-#define HashTree(K, V)                                                         \
-    struct Hash##K##V {                                                        \
-        struct Hash##K##V* child[4];                                           \
+#define _HashTree(K, V, N)                                                     \
+    struct N {                                                                 \
+        struct N* child[4];                                                    \
         K key;                                                                 \
         V value;                                                               \
     }
+
+#define _HashTree_0(K, V) _HashTree(K, V, _Hash##K##V)
+
+#define HashTree(K, V, ...)                                                    \
+    __VA_OPT__(_HashTree(K, V, _Hash##__VA_ARGS))                              \
+    IF_NOT(__VA_OPT__(1), _HashTree_0(K, V))
 
 // Función hash para tipos de 64 bits
 //      @param key: Chave a hashear

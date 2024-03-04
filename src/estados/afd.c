@@ -64,7 +64,7 @@ void afd_add_estado(AFD* a, EstadoAFD e) { vec_push(a->estados, e); }
 // Engade unha transición ó AFD
 void afd_add_trans(AFD* a, const EstadoAFD* dende, const EstadoAFD* ata,
                    Trans c) {
-    if (dende->hash == 0 || ata->hash == 0) {
+    if (!dende || dende->hash == 0 || !ata || ata->hash == 0) {
         return;
     }
 
