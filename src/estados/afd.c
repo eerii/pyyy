@@ -46,6 +46,10 @@ bool _trans_afd_eq(const TransAFD* a, const TransAFD* b) {
 
 // Engade unha clausura a un AFD coma un novo estado
 void _afd_push(AFD* a, Clausura* c, bool f) {
+    if (c->hash == 0) {
+        return;
+    }
+
     afd_add_estado(a, (EstadoAFD){.hash = c->hash, .final = f});
     c->e = &a->estados.data[a->estados.len - 1];
 }
@@ -60,6 +64,10 @@ void afd_add_estado(AFD* a, EstadoAFD e) { vec_push(a->estados, e); }
 // Engade unha transición ó AFD
 void afd_add_trans(AFD* a, const EstadoAFD* dende, const EstadoAFD* ata,
                    Trans c) {
+    if (dende->hash == 0 || ata->hash == 0) {
+        return;
+    }
+
     // Buscar os índices de dende e ata
     u32 id = vec_find(a->estados, *dende, _estado_afd_eq);
     u32 ia = vec_find(a->estados, *ata, _estado_afd_eq);

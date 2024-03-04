@@ -164,8 +164,6 @@
         I;                                                                     \
     })
 
-#define EQ(A, B) (*A == *B)
-
 // Engade un elemento ó final do vector
 // Se non cabe, redimensiona
 //      @param V: Vector ó que engadir

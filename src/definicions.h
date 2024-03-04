@@ -101,7 +101,9 @@
 #define log(FMT, ...) print(C_BLUE, FMT, __VA_ARGS__)
 #define err(FMT, ...) print(C_RED, FMT, __VA_ARGS__)
 
-#define e_compatible(x, T) _Generic((x), T: 1, default: 0)
+#define EQ(A, B) (*A == *B)
+
+#define COMPATIBLE(x, T) _Generic((x), T: 1, default: 0)
 
 // Se usamos clang (non soporta todo c23 todavía), alias auto a __auto_type
 #ifdef __clang__

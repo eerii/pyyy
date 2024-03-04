@@ -13,71 +13,123 @@
 #pragma once
 
 #include "arena.h"
-#include "str.h"
 
-// Tipos do hashmap
-//      Nota: nesta caso non compensa facelo xenérico coma o vector xa que
-//      só vamos a utilizar esta estructura para a táboa de símbolos
-typedef Str HashKey;
-typedef u32 HashValue;
-
-// Hashmap
-typedef struct HashTree HashTree;
-struct HashTree {
-    HashTree* child[4];
-    HashKey key;
-    HashValue value;
-};
-
-// Función hash de 64 bits para strings
-//       @param key: Chave a hashear
-static inline u64 hash_str(HashKey key) {
-    u64 h = 0x100;
-    for (u64 i = 0; i < key.len; i++) {
-        h ^= key.data[i];
-        h *= 1111111111111111111u;
+// Hashmap dinámico
+// É recomendable facer un typedef co tipo que se vaia a utilizar para que o
+// compilador entenda que múltiples instancias son do mesmo tipo e poder
+// utilizalo como parámetro en funcións convencionais
+#define HashTree(K, V)                                                         \
+    struct Hash##K##V {                                                        \
+        struct Hash##K##V* child[4];                                           \
+        K key;                                                                 \
+        V value;                                                               \
     }
-    return h;
+
+// Función hash para tipos de 64 bits
+//      @param key: Chave a hashear
+static inline u64 hash_64(u64 key) {
+    key ^= key >> 33;
+    key *= 0xff51afd7ed558ccdL;
+    key ^= key >> 33;
+    key *= 0xc4ceb9fe1a85ec53L;
+    key ^= key >> 33;
+    return key;
 }
 
-// Compara duas chaves
-//       @param a: Chave 1
-//       @param b: Chave 2
-static inline bool equals_str(HashKey a, HashKey b) {
-    return a.len == b.len && !memcmp(a.data, b.data, a.len);
+// Función hash para tipos de 32 bits (devolve 32 bits)
+//      @param key: Chave a hashear
+static inline u32 _hash_32(u32 key) {
+    key = ~key + (key << 15);
+    key = key ^ (key >> 12);
+    key = key + (key << 2);
+    key = key ^ (key >> 4);
+    key = key * 2057;
+    key = key ^ (key >> 16);
+    return key;
 }
+
+// Función hash para tipos de 32 bits (devolve 64 bits)
+//      @param key: Chave a hashear
+static inline u64 hash_32(u32 key) {
+    u32 h = _hash_32(key);
+    return h + _hash_32(key ^ h);
+}
+
+// Función "hash" para caracteres
+// Simplemente devolve o caracter (non vamos a hashear 255 números)
+// Tal como funciona o hashmap, o máis importante son estes primeiros bits
+//      @param key: Chave a hashear
+static inline u64 hash_8(u8 key) { return (u64)key; }
+
+// Función hash xenérica
+// Une as funcións hash de múltiples tipos nunha unica función
+//      @param K: Chave a hashear
+#define hash(K)                                                                \
+    _Generic((K),                                                              \
+        Str: hash_str,                                                         \
+        u8: hash_8,                                                            \
+        i32: hash_32,                                                          \
+        i64: hash_64,                                                          \
+        u32: hash_32,                                                          \
+        u64: hash_64)(K)
+
+// Funcións de comparación para tipos básicos
+#define _equals(T)                                                             \
+    static inline bool equals_##T(T a, T b) { return a == b; }
+
+_equals(u8);
+_equals(i32);
+_equals(i64);
+_equals(u32);
+_equals(u64);
+
+// Función equals xenérica
+// Une as funcións equals de múltiples tipos nunha unica función
+//      @param A: Chave 1
+//      @param B: Chave 2
+#define equals(A, B)                                                           \
+    _Generic((A),                                                              \
+        Str: equals_str,                                                       \
+        u8: equals_u8,                                                         \
+        i32: equals_i32,                                                       \
+        i64: equals_i64,                                                       \
+        u32: equals_u32,                                                       \
+        u64: equals_u64)(A, B)
 
 // Modifica ou inserta unha chave no hashmap
 // Se non se pasa arena, é un lookup simple e devolve NULL se non se atopa
-//      @param m: Árbore hash
-//      @param key: Chave a engadir ou modificar
-//      @param a: Arena de memoria na que ubicar o hashmap (pode ser NULL)
-static inline HashValue* hash_ins(HashTree** m, HashKey key, Arena* a) {
-    // Xeramos un hash a partir da chave indicada
-    // Usamos dous bits da chave hash para elexir unha das catro ramas
-    // En cada nivel, dous bits son shifteados (trie of hash bits)
-    for (u64 h = hash_str(key); *m; h <<= 2) {
-        // Se atopa o elemento, devolve o valor
-        if (equals_str(key, (*m)->key)) {
-            return &(*m)->value;
-        }
-        // Se non, continua buscando
-        m = &(*m)->child[h >> 62];
-    }
-
-    // Se non se proporciona unha arena e non se atopa un elemento, devolve NULL
-    if (!a) {
-        return NULL;
-    }
-
-    // Crea un novo hashmap usando a arena e asigna o valor da chave
-    *m = arena_push_struct(a, HashTree);
-    (*m)->key = key;
-    return &(*m)->value;
-}
+//
+// Xeramos un hash a partir da chave indicada
+// Usamos dous bits da chave hash para elexir unha das catro ramas
+// En cada nivel, dous bits son shifteados (trie of hash bits)
+// Se atopa o elemento, devolve o valor, se non, sigue buscando
+//
+// Se non se proporciona unha arena e non se atopa un elemento, devolve NULL
+// Se si hai, crea un novo hashmap usando a arena e asigna o valor da chave
+//      @param H: Árbore hash
+//      @param K: Chave a engadir ou modificar
+//      @param A: Arena de memoria na que ubicar o hashmap (pode ser NULL)
+#define hash_ins(H, K, A)                                                      \
+    ({                                                                         \
+        typeof(H)* hm = &H;                                                    \
+        typeof(H->value)* res = NULL;                                          \
+        for (u64 h = hash(K); *hm; h <<= 2) {                                  \
+            if (equals(K, (*hm)->key)) {                                       \
+                res = &(*hm)->value;                                           \
+                break;                                                         \
+            }                                                                  \
+            hm = &(*hm)->child[h >> 62];                                       \
+        }                                                                      \
+        if (A != NULL && res == NULL) {                                        \
+            *hm = arena_push_struct(A, typeof(*H));                            \
+            (*hm)->key = K;                                                    \
+            res = &(*hm)->value;                                               \
+        }                                                                      \
+        res;                                                                   \
+    })
 
 // Percorre o hashmap executando unha función para cada elemento
-//      @param M: Hashmap a percorrer
+//      @param H: Hashmap a percorrer
 //      @param VAR: Variável auxiliar na que se garda o valor de cada elemento
 //      @param DO: Código a executar
 #define hash_for_each(H, VAR, DO)                                              \
@@ -100,7 +152,6 @@ static inline HashValue* hash_ins(HashTree** m, HashKey key, Arena* a) {
     })
 
 // Elimina un hashmap de memoria
-//      @param h: Hashmap a eliminar
-static inline void hash_free(HashTree* h) {
-    hash_for_each(h, x, arena_del(&arena, (u8*)x, sizeof(HashTree)));
-}
+//      @param H: Hashmap a eliminar
+#define hash_free(H)                                                           \
+    hash_for_each(H, x, arena_del(&arena, (u8*)x, sizeof(typeof(*H))));

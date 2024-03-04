@@ -28,6 +28,7 @@
 
 #include "estados/afd.h"
 #include "estados/regex.h"
+
 #include "lexico.h"
 
 // Definición da arena global
