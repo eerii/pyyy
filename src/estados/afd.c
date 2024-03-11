@@ -8,7 +8,7 @@
 typedef struct {
     u32 hash;
     VecEstado v;
-    const EstadoAFD* e;
+    EstadoAFD* e;
 } Clausura;
 typedef Vec(Clausura) VecClausura;
 
@@ -37,13 +37,6 @@ bool _estado_afd_eq(const EstadoAFD* a, const EstadoAFD* b) {
     return a->hash == b->hash;
 }
 
-// Compara se dúas transicións afd son iguais
-//      @param a: Transición 1
-//      @param b: Transición 2
-bool _trans_afd_eq(const TransAFD* a, const TransAFD* b) {
-    return a->dende == b->dende && a->ata == b->ata && a->c == b->c;
-}
-
 // Engade unha clausura a un AFD coma un novo estado
 void _afd_push(AFD* a, Clausura* c, bool f) {
     if (c->hash == 0) {
@@ -51,7 +44,7 @@ void _afd_push(AFD* a, Clausura* c, bool f) {
     }
 
     afd_add_estado(a, (EstadoAFD){.hash = c->hash, .final = f});
-    c->e = &a->estados.data[a->estados.len - 1];
+    c->e = &a->data[a->len - 1];
 }
 
 // ---
@@ -59,26 +52,23 @@ void _afd_push(AFD* a, Clausura* c, bool f) {
 // ---
 
 // Engade un estado a un AFD
-void afd_add_estado(AFD* a, EstadoAFD e) { vec_push(a->estados, e); }
+void afd_add_estado(AFD* a, EstadoAFD e) { vec_push((*a), e); }
 
 // Engade unha transición ó AFD
-void afd_add_trans(AFD* a, const EstadoAFD* dende, const EstadoAFD* ata,
-                   Trans c) {
+void afd_add_trans(AFD* a, EstadoAFD* dende, const EstadoAFD* ata, Trans c) {
     if (!dende || dende->hash == 0 || !ata || ata->hash == 0) {
         return;
     }
 
     // Buscar os índices de dende e ata
-    u32 id = vec_find(a->estados, *dende, _estado_afd_eq);
-    u32 ia = vec_find(a->estados, *ata, _estado_afd_eq);
+    u32 ia = vec_find((*a), *ata, _estado_afd_eq);
 
-    if (id == a->estados.len || ia == a->estados.len) {
-        err("intentouse engadir unha transición de estados inexistentes\n");
+    if (ia == a->len) {
+        err("intentouse engadir unha transición a un estado inexistente\n");
         return;
     }
 
-    vec_push_unique(a->trans, ((TransAFD){.dende = id, .ata = ia, .c = c}),
-                    _trans_afd_eq);
+    *hash_ins(dende->trans, c, &arena) = ia;
 }
 
 // Convirte un AFN nun AFD
@@ -94,8 +84,7 @@ AFD afn_to_afd(const AFN* a) {
     vec_push(estados, ((Clausura){.hash = (u32)_hash_clausura(&ci), .v = ci}));
 
     // Engade o estado inciial ó AFD
-    AFD afd = ((AFD){.estados = vec_new(VecEstadoAFD),
-                     .trans = vec_new(VecTransAFD)});
+    AFD afd = vec_new(AFD);
     _afd_push(&afd, &estados.data[0], false);
 
     // Iteramos ata que non se produzan novos estados
@@ -120,9 +109,8 @@ AFD afn_to_afd(const AFN* a) {
             }
 
             // Engadimos a transición
-            const EstadoAFD* ata = it == estados.len
-                                       ? &afd.estados.data[afd.estados.len - 1]
-                                       : estados.data[it].e;
+            const EstadoAFD* ata =
+                it == estados.len ? &afd.data[afd.len - 1] : estados.data[it].e;
             afd_add_trans(&afd, c->e, ata, s);
         });
 
@@ -130,12 +118,11 @@ AFD afn_to_afd(const AFN* a) {
     }
 
     // TODO: Liberar vectores
-    dbg("afd: estados - %d, trans - %d\n", afd.estados.len, afd.trans.len);
+    dbg("afd: estados - %d, trans - TODO\n", afd.len);
     dbg("estados:\n");
-    vec_for_each(afd.estados, e _U_,
+    vec_for_each(afd, e _U_,
                  dbg("%u%s\n", e.hash & 0xfff, e.final ? " (final)" : ""));
     dbg("transicions:\n");
-    vec_for_each(afd.trans, t _U_, dbg("%u -%c-> %u\n", t.dende, t.c, t.ata));
     return afd;
 }
 
@@ -145,18 +132,15 @@ void afd_graph(const AFD* a, FILE* f) {
                "    rankdir=LR;\n    size=\"8,5\"\n"
                "    labelloc=\"b\";\n    label=\"AFD\";");
 
-    vec_for_each(a->estados, e, {
+    vec_for_each((*a), e, {
         fprintf(f, "    node [shape = %s label = \"\"]; %u\n",
                 e.final ? "doublecircle" : "circle", e.hash);
-    });
-
-    vec_for_each(a->trans, t, {
-        fprintf(f, "    %u -> %u [ label = \"%c\" ];\n",
-                a->estados.data[t.dende].hash, a->estados.data[t.ata].hash,
-                t.c);
+        hash_for_each(e.trans, t, {
+            fprintf(f, "    %u -> %u [ label = \"%c\" ];\n", e.hash,
+                    a->data[t->value].hash, t->key);
+        });
     });
 
     fprintf(f, "    node [shape = none label=\"\"]; start\n"); /* start mark */
-    fprintf(f, "    start -> %u [ label = \"start\" ]\n}\n",
-            a->estados.data[0].hash);
+    fprintf(f, "    start -> %u [ label = \"start\" ]\n}\n", a->data[0].hash);
 }

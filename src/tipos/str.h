@@ -2,8 +2,6 @@
 // É unha especificación que permite todos os metodos vec_
 // Tamén engade as funcións específicas str_ para facilitar o traballo con
 // strings e o caracter de terminación \0
-//
-// @author: @eerii, jose.pazos.perez@rai.usc.es
 
 #pragma once
 

@@ -8,8 +8,6 @@
 //      - https://en.wikipedia.org/wiki/Region-based_memory_management
 //      - https://www.rfleury.com/p/untangling-lifetimes-the-arena-allocator
 //      - https://nullprogram.com/blog/2023/09/27/
-//
-// @author: @eerii, jose.pazos.perez@rai.usc.es
 
 #pragma once
 
@@ -30,8 +28,8 @@
 //          (dentro do límite), permite engadir novas arenas
 
 // Tamaño e número máximo de páxinas
-#define CHUNK ((u64)1 << 20)      // 1mb
-#define MAX_BLOCKS ((u64)1 << 10) // 16gb*
+#define CHUNK ((u64)1 << 16)      // 8kb
+#define MAX_BLOCKS ((u64)1 << 16) // 0.5gb*
 // NOTA: Pode configurarse moito máis alto, xa que só reservamos direccións de
 // memoria virtuais, das que temos máis de 100tb a nosa disposición
 // Por suposto, isto estará limitado cando se vaian creando páxinas pola

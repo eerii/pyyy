@@ -12,8 +12,6 @@
 // https://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html
 //
 // Usa a arena de memoria global
-//
-// @author: @eerii, jose.pazos.perez@rai.usc.es
 
 #pragma once
 

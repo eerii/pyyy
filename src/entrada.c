@@ -1,6 +1,10 @@
 #include "entrada.h"
 #include "tipos/arena.h"
 
+// Uso fread
+// Doble centinela
+// Pasar a palabra dende o buffer sen facer copias
+
 Arquivo* abrir_arquivo(const char* nome) {
     FILE* file = fopen(nome, "r");
     if (file == NULL) {

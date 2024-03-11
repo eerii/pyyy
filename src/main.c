@@ -24,6 +24,11 @@
 // - auto
 // - varadic functions (log etc)
 
+// Gestión de errores
+// Mirar MUCHO la memoria
+
+// Imprimir la tabla de simbolos inicial/final
+
 #include "tipos/arena.h"
 
 #include "estados/afd.h"
@@ -41,13 +46,13 @@ i32 main() {
     AFN afn = regex_to_afn(regex);
     AFD afd _U_ = afn_to_afd(&afn);
 
-    /*FILE* graph = fopen("docs/afn.dot", "w");
-    afn_graph(regex, &afn, graph);
-    fclose(graph);
+    /* FILE* graph = fopen("docs/afn.dot", "w"); */
+    /* afn_graph(regex, &afn, graph); */
+    /* fclose(graph); */
 
-    FILE* graph2 = fopen("docs/afd.dot", "w");
-    afd_graph(&afd, graph2);
-    fclose(graph2);*/
+    /* FILE* graph2 = fopen("docs/afd.dot", "w"); */
+    /* afd_graph(&afd, graph2); */
+    /* fclose(graph2); */
 
     const char* s = "ccab";
 

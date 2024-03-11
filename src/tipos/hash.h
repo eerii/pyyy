@@ -7,8 +7,6 @@
 //      - https://en.wikipedia.org/wiki/Hash_trie
 //      - https://nrk.neocities.org/articles/hash-trees-and-tries
 //      - https://nullprogram.com/blog/2022/08/08
-//
-// @author: @eerii, jose.pazos.perez@rai.usc.es
 
 #pragma once
 
@@ -18,6 +16,7 @@
 // É recomendable facer un typedef co tipo que se vaia a utilizar para que o
 // compilador entenda que múltiples instancias son do mesmo tipo e poder
 // utilizalo como parámetro en funcións convencionais
+// TODO: Probar a facer punteiros u32
 #define _HashTree(K, V, N)                                                     \
     struct N {                                                                 \
         struct N* child[4];                                                    \
