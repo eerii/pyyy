@@ -1,36 +1,35 @@
 #include "lexico.h"
-#include "tipos/str.h"
 
-u32 seguinte_lexico(Arquivo* a) {
+bool comentario_linha = false;
+
+u32 seguinte_lexico(Centinela* c) {
     // TODO: Funcións de expresións regulares
     //      - Identificador alfanumérico
     //      - Número
     //      - Operadores ...
     //      Mirar se podo usar regex en c
 
-    i32 c;
-    static Str buf;
-    if (buf.cap == 0) {
-        vec_init_res(buf, 128);
-    }
-
     while (true) {
-        c = seguinte_caracter(a);
-        vec_push(buf, c);
+        char ch = centinela_ler(c);
 
         // Comprobar fin de arquivo
-        if (c == EOF) {
-            return c;
+        if (ch == EOF) {
+            return ch;
         }
 
-        // Comentarios de liña
-        if (c == '\n' || c == '\t') {
-            a->comentario_linha = false;
-            vec_clear(buf);
+        // Comprobar comentario
+        if (ch == '\n' || ch == '\r') {
+            comentario_linha = false;
         }
-        if (a->comentario_linha || c == '#') {
-            a->comentario_linha = true;
+        if (comentario_linha || ch == '#') {
+            comentario_linha = true;
+            centinela_inicio(c);
             continue;
+        }
+
+        // Proba
+        if (ch == 'i') {
+            return 100;
         }
     }
 

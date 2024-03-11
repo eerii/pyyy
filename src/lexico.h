@@ -1,5 +1,5 @@
 #pragma once
 
-#include "entrada.h"
+#include "tipos/centinela.h"
 
-u32 seguinte_lexico(Arquivo* a);
+u32 seguinte_lexico(Centinela* a);

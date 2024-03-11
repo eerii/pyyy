@@ -24,6 +24,12 @@
     - [ ] comentarios
         - [ ] comentario de encoding
     - [ ] liñas en branco
+- [ ] sistema de entrada
+    - [x] buffer dobre centinela
+    - [x] cargar outro buffer
+    - [x] devolver caracter
+    - [x] comprobación de limites
+    - [ ] erro simbolo demasiado largo
 - [ ] análise léxico
     - [ ] palabras clave
     - [ ] identificadores
@@ -32,5 +38,5 @@
         - [ ] números
         - [ ] strings
     - [ ] caracteres especiais
-- [ ] mellorar logging
+- [ ] sistema de erros
 - [ ] macros varádicas (pasar arena en vec?)

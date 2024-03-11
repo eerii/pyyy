@@ -42,6 +42,23 @@ Arena arena;
 i32 main() {
     arena_init(&arena);
 
+    Centinela c;
+    if (!centinela_init(&c, "docs/wilcoxon.py")) {
+        return 1;
+    }
+
+    i32 l;
+    i32 limite = 0;
+    while ((l = seguinte_lexico(&c)) != EOF) {
+        limite++;
+        if (limite == 3)
+            break;
+        // ...
+    }
+    log("fin de arquivo\n");
+
+    return 0;
+
     const char* regex = "(ab|aa*)+";
     AFN afn = regex_to_afn(regex);
     AFD afd _U_ = afn_to_afd(&afn);
@@ -79,16 +96,6 @@ i32 main() {
     printf("Aceptado: %s\n\n", aceptado ? "true" : "false");
 
     afn_free(&afn);
-
-    Arquivo* a = abrir_arquivo("docs/wilcoxon.py");
-    if (a == NULL) {
-        return 1;
-    }
-
-    i32 l;
-    while ((l = seguinte_lexico(a)) != EOF) {
-        // ...
-    }
 
     log("tam arena: %lu/%lu\n", arena_len(arena), arena_cap(arena));
     Tumba* t = arena.eliminados;

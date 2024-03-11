@@ -28,8 +28,8 @@
 //          (dentro do límite), permite engadir novas arenas
 
 // Tamaño e número máximo de páxinas
-#define CHUNK ((u64)1 << 16)      // 8kb
-#define MAX_BLOCKS ((u64)1 << 16) // 0.5gb*
+#define CHUNK ((u64)1 << 17)      // 16kb
+#define MAX_BLOCKS ((u64)1 << 16) // 1gb*
 // NOTA: Pode configurarse moito máis alto, xa que só reservamos direccións de
 // memoria virtuais, das que temos máis de 100tb a nosa disposición
 // Por suposto, isto estará limitado cando se vaian creando páxinas pola

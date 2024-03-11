@@ -86,6 +86,7 @@
 #define C_YELLOW "\x1b[33m"
 #define C_BLUE "\x1b[34m"
 #define C_BOLD "\x1b[1m"
+#define C_UNDERLINE "\x1b[4m"
 
 // Impresión varádica e con diferentes tipos
 #define PFILE(COLOR) COLOR C_BOLD "[" __FILE__ ":%d] " C_RESET
