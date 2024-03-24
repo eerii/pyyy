@@ -1,4 +1,5 @@
 #include "afd.h"
+#include "regex.h"
 
 // -----------------
 // Funcións internas
@@ -8,7 +9,6 @@
 typedef struct {
     u32 hash;
     VecEstado v;
-    EstadoAFD* e;
 } Clausura;
 typedef Vec(Clausura) VecClausura;
 
@@ -24,9 +24,9 @@ u64 _hash_clausura(const VecEstado* c) {
 }
 
 // Compara se dúas clausuras son iguais
-//      @param a: Clausura 1
+//      @param a: Estado 1
 //      @param b: Clausura 2
-bool _clausura_eq(const Clausura* a, const Clausura* b) {
+bool _clausura_eq(const EstadoAFD* a, const Clausura* b) {
     return a->hash == b->hash;
 }
 
@@ -44,7 +44,6 @@ void _afd_push(AFD* a, Clausura* c, bool f) {
     }
 
     afd_add_estado(a, (EstadoAFD){.hash = c->hash, .final = f});
-    c->e = &a->data[a->len - 1];
 }
 
 // ---
@@ -55,20 +54,20 @@ void _afd_push(AFD* a, Clausura* c, bool f) {
 void afd_add_estado(AFD* a, EstadoAFD e) { vec_push((*a), e); }
 
 // Engade unha transición ó AFD
-void afd_add_trans(AFD* a, EstadoAFD* dende, const EstadoAFD* ata, Trans c) {
-    if (!dende || dende->hash == 0 || !ata || ata->hash == 0) {
+void afd_add_trans(AFD* a, u32 dende_i, u32 ata_i, Trans c) {
+    if (dende_i >= a->len || ata_i >= a->len) {
         return;
     }
 
-    // Buscar os índices de dende e ata
-    u32 ia = vec_find((*a), *ata, _estado_afd_eq);
+    EstadoAFD* dende = &a->data[dende_i];
+    EstadoAFD* ata = &a->data[ata_i];
 
-    if (ia == a->len) {
-        err("intentouse engadir unha transición a un estado inexistente\n");
+    if (dende->hash == 0 || ata->hash == 0) {
         return;
     }
 
-    *hash_ins(dende->trans, c, &arena) = ia;
+    printf("hi %p %c\n", dende->trans, c);
+    *hash_ins(dende->trans, c, &arena) = ata_i;
 }
 
 // Convirte un AFN nun AFD
@@ -90,40 +89,64 @@ AFD afn_to_afd(const AFN* a) {
     // Iteramos ata que non se produzan novos estados
     u32 i = 0;
     while (estados.len > i) {
-        Clausura* c = &estados.data[i];
+        u32 dende = vec_find(afd, estados.data[i], _clausura_eq);
 
         // Para cada simbolo, calculamos as transicións na clausura
         vec_for_each(simbolos, s, {
-            VecEstado sig = afn_delta(&c->v, s);
+            VecEstado sig = afn_delta(&estados.data[i].v, s);
             VecEstado csig = afn_clausura_set(&sig);
-            vec_free(sig);
-
             Clausura cs =
                 ((Clausura){.hash = (u32)_hash_clausura(&csig), .v = csig});
 
             // Comprobamos que o estado definido pola clausura é novo
-            u32 it = vec_find(estados, cs, _clausura_eq);
-            if (it == estados.len) {
+            u32 ata = vec_find(afd, cs, _clausura_eq);
+            if (ata == afd.len && cs.hash) {
                 _afd_push(&afd, &cs, afn_final(a, &cs.v));
                 vec_push(estados, cs);
+            } else {
+                vec_free(csig);
             }
 
             // Engadimos a transición
-            const EstadoAFD* ata =
-                it == estados.len ? &afd.data[afd.len - 1] : estados.data[it].e;
-            afd_add_trans(&afd, c->e, ata, s);
+            afd_add_trans(&afd, dende, ata, s);
+            vec_free(sig);
         });
 
         i++;
     }
 
-    // TODO: Liberar vectores
-    dbg("afd: estados - %d, trans - TODO\n", afd.len);
+    vec_free(estados);
+    vec_free(ci);
+
+#ifdef DEBUG
+    dbg("afd: estados - %d, trans - %d\n", afd.len, estados.len);
     dbg("estados:\n");
-    vec_for_each(afd, e _U_,
-                 dbg("%u%s\n", e.hash & 0xfff, e.final ? " (final)" : ""));
-    dbg("transicions:\n");
+    vec_for_each(afd, e _U_, {
+        dbg("%u%s\n", e.hash & 0xfff, e.final ? " (final)" : "");
+        hash_for_each(
+            e.trans, t,
+            dbg("\t%c -> %u\n", t->key, afd.data[t->value].hash & 0xfff));
+    });
+    dbg("fin\n");
+#endif
     return afd;
+}
+
+// Calcula unha transición de estado
+EstadoAFD* afd_delta(const AFD* a, EstadoAFD* actual, Trans c) {
+    info("a: %p, actual %p, ch: %c, valido: %s\n", a, actual, c,
+         caracter_valido(c) ? "true" : "false");
+    if (!actual) {
+        return NULL;
+    }
+    if (!caracter_valido(c)) {
+        return actual;
+    }
+    u32* sig = hash_ins(actual->trans, c, NULL);
+    if (sig == NULL) {
+        return NULL;
+    }
+    return &a->data[*sig];
 }
 
 // Representa o autómata en formato graphviz
@@ -135,6 +158,9 @@ void afd_graph(const AFD* a, FILE* f) {
     vec_for_each((*a), e, {
         fprintf(f, "    node [shape = %s label = \"\"]; %u\n",
                 e.final ? "doublecircle" : "circle", e.hash);
+    });
+
+    vec_for_each((*a), e, {
         hash_for_each(e.trans, t, {
             fprintf(f, "    %u -> %u [ label = \"%c\" ];\n", e.hash,
                     a->data[t->value].hash, t->key);

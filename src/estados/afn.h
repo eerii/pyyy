@@ -102,4 +102,4 @@ void afn_free(AFN* a);
 //      @param regex: Expresión regular
 //      @param a: Autómata a representar
 //      @param f: Ficheiro no que gardar a representación
-void afn_graph(const char* regex, const AFN* a, FILE* f);
+void afn_graph(const AFN* a, FILE* f);

@@ -27,14 +27,20 @@ void afd_add_estado(AFD* a, EstadoAFD e);
 
 // Engade unha transición ó AFD
 //      @param a: AFD no que engadir
-//      @param dende: Estado dende o que transicionar
-//      @param ata: Estado ata o que transicionar
+//      @param dende: Indice do estado dende o que transicionar
+//      @param ata: Indice do estado ata o que transicionar
 //      @param c: Caracter a transicionar
-void afd_add_trans(AFD* a, EstadoAFD* dende, const EstadoAFD* ata, Trans c);
+void afd_add_trans(AFD* a, u32 dende, u32 ata, Trans c);
 
 // Convirte un AFN nun AFD
 //      @param a: AFN a convertir
 AFD afn_to_afd(const AFN* a);
+
+// Realiza unha transición do AFD con un caracter
+//      @param a: AFD
+//      @param actual: Estado actual
+//      @param c: Caracter a comprobar
+EstadoAFD* afd_delta(const AFD* a, EstadoAFD* actual, Trans c);
 
 // Representa o autómata en formato graphviz
 //      @param a Autómata a representar

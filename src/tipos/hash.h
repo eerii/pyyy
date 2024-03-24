@@ -126,7 +126,7 @@ _equals(u64);
             hm = &(*hm)->child[h >> 62];                                       \
         }                                                                      \
         if (A != NULL && res == NULL) {                                        \
-            *hm = arena_push_struct(A, typeof(*H));                            \
+            *hm = arena_push_struct_zero(A, typeof(*H));                       \
             (*hm)->key = K;                                                    \
             res = &(*hm)->value;                                               \
         }                                                                      \

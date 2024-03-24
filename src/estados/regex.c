@@ -1,15 +1,8 @@
-#include <ctype.h>
-
 #include "regex.h"
 
 // -----------------
 // Funcións internas
 // -----------------
-
-bool _afn_caracter_valido(char ch) {
-    // TODO: Ampliar abecedario
-    return isalnum(ch);
-}
 
 AFN _afn_expr_rep(char** c);
 AFN _afn_expr_char(char** c);
@@ -96,3 +89,9 @@ AFN _afn_expr_char(char** c) {
 
 // Convirte unha expresión regular a un AFN
 AFN regex_to_afn(const char* regex) { return _afn_expr((char**)(&regex)); }
+
+// É un caracter válido
+bool caracter_valido(char ch) {
+    // TODO: Ampliar abecedario
+    return isalnum(ch);
+}

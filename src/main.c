@@ -22,7 +22,7 @@
 // - constexpr
 // - compound literals
 // - auto
-// - varadic functions (log etc)
+// - varadic functions (info etc)
 
 // Gestión de errores
 // Mirar MUCHO la memoria
@@ -31,9 +31,6 @@
 
 #include "tipos/arena.h"
 
-#include "estados/afd.h"
-#include "estados/regex.h"
-
 #include "lexico.h"
 
 // Definición da arena global
@@ -41,6 +38,7 @@ Arena arena;
 
 i32 main() {
     arena_init(&arena);
+    automatas_init();
 
     Centinela c;
     if (!centinela_init(&c, "docs/wilcoxon.py")) {
@@ -55,61 +53,21 @@ i32 main() {
             break;
         // ...
     }
-    log("fin de arquivo\n");
+    info("fin de arquivo\n");
 
-    return 0;
-
-    const char* regex = "(ab|aa*)+";
-    AFN afn = regex_to_afn(regex);
-    AFD afd _U_ = afn_to_afd(&afn);
-
-    /* FILE* graph = fopen("docs/afn.dot", "w"); */
-    /* afn_graph(regex, &afn, graph); */
-    /* fclose(graph); */
-
-    /* FILE* graph2 = fopen("docs/afd.dot", "w"); */
-    /* afd_graph(&afd, graph2); */
-    /* fclose(graph2); */
-
-    const char* s = "ccab";
-
-    VecEstado vi = vec_new_from_n(VecEstado, afn.inicio, 1);
-    VecEstado vs = vec_new(VecEstado);
-
-    for (u32 i = 0; i < strlen(s); ++i) {
-        printf("\n%c (%d)\n  actual:\n", s[i], s[i]);
-        vec_for_each(vi, e,
-                     printf("    %p %d-%d\n", e, e->trans[0], e->trans[1]));
-        printf("  seguinte:\n");
-        vec_for_each(vs, e,
-                     printf("    %p %d-%d\n", e, e->trans[0], e->trans[1]));
-        printf("\n");
-
-        VecEstado tmp = vi;
-        vi = vs;
-        vs = tmp;
-        vec_clear(vs);
-    }
-
-    bool aceptado = false;
-    vec_for_each(vi, e, aceptado |= e == afn.fin);
-    printf("Aceptado: %s\n\n", aceptado ? "true" : "false");
-
-    afn_free(&afn);
-
-    log("tam arena: %lu/%lu\n", arena_len(arena), arena_cap(arena));
+    info("tam arena: %lu/%lu\n", arena_len(arena), arena_cap(arena));
     Tumba* t = arena.eliminados;
     u32 num_tumbas = 0;
     u32 tam_tumbas = 0;
-    log("tumbas:");
+    info("tumbas:");
     while (t) {
         printf("%u:%u,", num_tumbas++, t->tam);
         tam_tumbas += t->tam;
         t = t->sig;
     }
     printf("\n");
-    log("total: %u, tam: %u\n", num_tumbas, tam_tumbas);
-    log("arena ocupada real: %u\n", (u32)arena_len(arena) - tam_tumbas);
+    info("total: %u, tam: %u\n", num_tumbas, tam_tumbas);
+    info("arena ocupada real: %u\n", (u32)arena_len(arena) - tam_tumbas);
 
     arena_free(&arena);
     return 0;

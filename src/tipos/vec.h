@@ -19,7 +19,7 @@
 
 #include "arena.h"
 
-#define RESERVA_POR_DEFECTO_VEC 4
+#define RESERVA_POR_DEFECTO_VEC 2
 #define FACTOR_CRECEMENTO_VEC(V) (V.cap < 8192 ? V.cap * 2 : V.cap + 8192)
 
 // Vector dinámico

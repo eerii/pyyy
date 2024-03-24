@@ -155,6 +155,9 @@ static inline u8* arena_push_zero(Arena* a, u64 n) {
 #define arena_push_arr(A, T, N) (T*)arena_push(A, sizeof(T) * ((u64)N))
 #define arena_push_struct(A, T) arena_push_arr(A, T, 1)
 
+#define arena_push_arr_zero(A, T, N) (T*)arena_push_zero(A, sizeof(T) * ((u64)N))
+#define arena_push_struct_zero(A, T) arena_push_arr_zero(A, T, 1)
+
 // Elimina bytes do final do stack
 //      @param a: Arena de memoria
 //      @param n: Cantidade de memoria a eliminar

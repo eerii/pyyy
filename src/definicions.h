@@ -101,7 +101,7 @@
 #else
 #define dbg(...)
 #endif
-#define log(FMT, ...) print(C_BLUE, FMT, __VA_ARGS__)
+#define info(FMT, ...) print(C_BLUE, FMT, __VA_ARGS__)
 #define err(FMT, ...) print(C_RED, FMT, __VA_ARGS__)
 
 // Macro que compara dous valores (pasados como referencia)

@@ -223,17 +223,17 @@ void afn_free(AFN* a) {
 }
 
 // Representa o autómata en formato graphviz
-void afn_graph(const char* regex, const AFN* a, FILE* f) {
+void afn_graph(const AFN* a, FILE* f) {
     VecEstado s = vec_new(VecEstado);
     vec_push(s, a->inicio);
 
     fprintf(f,
             "digraph finite_state_machine {\n"
             "    rankdir=LR;\n    size=\"8,5\"\n"
-            "    labelloc=\"b\";\n    label=\"Regex : %s\";"
+            "    labelloc=\"b\";\n"
             "    node [shape = doublecircle label=\"\"]; addr_%p\n"
             "    node [shape = circle]\n",
-            regex, (void*)a->fin);
+            (void*)a->fin);
 
     afn_visit(&s, a->inicio);
     vec_for_each(s, e, {
