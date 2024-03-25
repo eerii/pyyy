@@ -46,4 +46,4 @@ static inline bool equals_str(Str a, Str b) {
 // Crea un Str dende un literal en linea
 //      @param l: Literal string
 #define str(l)                                                                 \
-    (Str) { .data = (l), .len = (sizeof(l) / sizeof(l[0])) }
+    (Str) { .len = (sizeof(l) / sizeof(l[0])), .data = (l) }

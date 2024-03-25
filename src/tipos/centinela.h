@@ -1,9 +1,8 @@
 #pragma once
 
 #include "../definicions.h"
-
-// Tamaño máximo do lexema (limitado polos buffers de entrada e saída)
-#define TAM_MAX 10
+#include "str.h"
+#include <stdlib.h>
 
 // Dobre centinela
 // Co obxectivo de reducir o número de accesos a memoria, creamos este dobre
@@ -16,10 +15,11 @@
 //  ^   a   ^  ^   b   ^
 //  |TAM_MAX| 1|TAM_MAX| 1
 typedef struct {
-    u8 datos[TAM_MAX * 2 + 2];
+    u8 datos[MAX_BUF_LEN * 2 + 2];
     u8* inicio;
     u8* actual;
     FILE* arquivo;
+    bool erro_tam_max;
 } Centinela;
 
 // Inicializa un centinela
@@ -30,12 +30,12 @@ typedef struct {
 static inline bool centinela_init(Centinela* c, const char* nome) {
     // Poñemos os punteiros no final do array
     // (para a carga correcta no primeiro bloque)
-    c->inicio = c->datos + TAM_MAX * 2;
+    c->inicio = c->datos + MAX_BUF_LEN * 2;
     c->actual = c->inicio;
 
     // Poñemos os centinelas (terminadores de string)
-    c->datos[TAM_MAX] = 0;
-    c->datos[TAM_MAX * 2 + 1] = 0;
+    c->datos[MAX_BUF_LEN] = 0;
+    c->datos[MAX_BUF_LEN * 2 + 1] = 0;
 
     // Abrimos o arquivo
     c->arquivo = fopen(nome, "r");
@@ -54,7 +54,7 @@ static inline bool centinela_init(Centinela* c, const char* nome) {
 //      @param c: Centinela
 static inline void centinela_dbg(Centinela* c, const char* s) {
     dbg("%s: [", s);
-    for (i32 i = 0; i < TAM_MAX * 2 + 2; i++) {
+    for (i32 i = 0; i < MAX_BUF_LEN * 2 + 2; i++) {
         u8 cc = c->datos[i];
         if (cc == '\0') {
             printf(C_RED "\\");
@@ -82,13 +82,15 @@ static inline void centinela_dbg(Centinela* c, const char* s) {
 //      @param f: Arquivo
 static inline void centinela_cargar(Centinela* c, u8 i) {
 #ifdef DEBUG_TRACE
-    dbg("cargouse o bloque %d do centinela\n\n", i);
+    dbg("o bloque %d do centinela está cargado\n\n", i);
 #endif
 
-    u32 res = fread(c->datos + TAM_MAX * i + i, 1, TAM_MAX, c->arquivo);
-    if (res < TAM_MAX) {
+    // TODO: IMPORTANTE, arreglar carga de bloques
+
+    u32 res = fread(c->datos + MAX_BUF_LEN * i + i, 1, MAX_BUF_LEN, c->arquivo);
+    if (res < MAX_BUF_LEN) {
         dbg("lendo o final do arquivo\n\n");
-        c->datos[TAM_MAX * i + i + res] = '\0';
+        c->datos[MAX_BUF_LEN * i + i + res] = '\0';
     }
 }
 
@@ -96,8 +98,13 @@ static inline void centinela_cargar(Centinela* c, u8 i) {
 //      @param c: Centinela
 static inline void centinela_sig(Centinela* c) {
     c->actual++;
-    if (c->actual == c->datos + TAM_MAX * 2 + 2) {
+    if (c->actual == c->datos + MAX_BUF_LEN * 2 + 2) {
         c->actual = c->datos;
+    }
+    // Comprobar se se superou o tamaño máximo
+    if (!c->erro_tam_max && abs(c->actual - c->inicio) == MAX_BUF_LEN) {
+        err("o buffer do centinela superou o tamaño maximo\n\n");
+        c->erro_tam_max = true;
     }
     centinela_dbg(c, "sig");
 }
@@ -106,7 +113,7 @@ static inline void centinela_sig(Centinela* c) {
 //      @param c: Centinela
 static inline void centinela_prev(Centinela* c) {
     if (c->actual == c->datos) {
-        c->actual = c->datos + TAM_MAX * 2 + 1;
+        c->actual = c->datos + MAX_BUF_LEN * 2 + 1;
     }
     c->actual--;
     centinela_dbg(c, "prev");
@@ -121,8 +128,8 @@ static inline u8 centinela_ler(Centinela* c) {
 
     // Se estamos nun dos centinelas, cargamos o outro bloque
     if (res == '\0') {
-        u8 i = c->actual == c->datos + TAM_MAX;
-        if (i || c->actual == c->datos + TAM_MAX * 2 + 1) {
+        u8 i = c->actual == c->datos + MAX_BUF_LEN;
+        if (i || c->actual == c->datos + MAX_BUF_LEN * 2 + 1) {
             centinela_cargar(c, i);
             centinela_sig(c);
             res = *c->actual;
@@ -137,4 +144,46 @@ static inline u8 centinela_ler(Centinela* c) {
 
 // Establece o inicio do centinela no punto actual
 //      @param c: Centinela a modificar
-static inline void centinela_inicio(Centinela* c) { c->inicio = c->actual; }
+static inline void centinela_inicio(Centinela* c) {
+    c->inicio = c->actual;
+    c->erro_tam_max = false;
+}
+
+// Obtén a cadena de caracteres representada actualmente no centinela
+//      @param c: Centinela
+//      @return: Cadea de caracteres
+static inline Str centinela_str(Centinela* c) {
+    Str s;
+
+    // Caso no que hai un erro (devolvese o máximo posible dende o inicio)
+    if (c->erro_tam_max) {
+        vec_init_res(s, MAX_BUF_LEN);
+        // Inicio está na segunda metade
+        if (c->inicio > c->datos + MAX_BUF_LEN + 1) {
+        }
+        // Inicio está na primeira metade
+        else {
+        }
+    }
+    // Caso no que non hai erro (devolvese de inicio a actual)
+    else {
+        //     // Inicio está na segunda metade
+        if (c->inicio > c->datos + MAX_BUF_LEN + 1) {
+
+        }
+        //     // Inicio está na primeira metade
+        else {
+            // Actual está na primeira metade
+            if (c->actual > c->inicio) {
+                vec_init_res(s, (c->actual - c->inicio));
+                vec_append_n(s, c->inicio, (c->actual - c->inicio));
+            }
+            // Actual está na segunda metade
+            else {
+            }
+        }
+    }
+
+    vec_push(s, '\0');
+    return s;
+}

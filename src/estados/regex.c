@@ -69,6 +69,7 @@ AFN _afn_expr_rep(char** c) {
 AFN _afn_expr_char(char** c) {
     AFN res;
     char ch = **c;
+    bool escaped = false;
 
     if (ch == '.') { // Calqueira
         ch = TRANS_ANY;
@@ -83,6 +84,15 @@ AFN _afn_expr_char(char** c) {
         case 'd':
             ch = TRANS_DIXITO;
             break;
+        case 'D':
+            ch = TRANS_DIXITO_NON_CERO;
+            break;
+        case 'o':
+            ch = TRANS_DIXITO_OCTAL;
+            break;
+        case 'x':
+            ch = TRANS_DIXITO_HEX;
+            break;
         case 's':
             ch = TRANS_ESPAZO;
             break;
@@ -92,18 +102,24 @@ AFN _afn_expr_char(char** c) {
         case '\'':
             ch = TRANS_SHORTSTRING_SINGLE;
             break;
+        case '+':
+        case '*':
+        case '|':
         case '.':
-            ch = '.';
+        case '(':
+        case ')':
+            ch = **c;
+            escaped = true;
             break;
         default:
             ch = **c;
         }
     }
 
-    if (ch == '(') { // Parénteses
-        *c += 1;     // Seguinte símbolo
+    if (ch == '(' && !escaped) { // Parénteses
+        *c += 1;                 // Seguinte símbolo
         res = _afn_expr(c);
-        if (**c != ')') {
+        if (**c != ')' && !escaped) {
             err("os parénteses non están balanceados\n");
         }
     } else {

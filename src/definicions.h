@@ -58,7 +58,16 @@
 #define TYPE 402
 #define UNDERSCORE 403
 
-// Operadores e delimitadores (usamos ASCII)
+// Operadores e delimitadores (usamos ASCII menos para os dobres, 450+)
+#define OP_EQ 450
+#define OP_NEQ 451
+#define OP_LEQ 452
+#define OP_GEQ 453
+#define OP_EQ_DEF 454
+#define OP_SHIFT_DER 455
+#define OP_SHIFT_ESQ 456
+#define OP_STAR_STAR 457
+
 // Espazos en blanco *non* son tokens
 
 // ·····
@@ -83,12 +92,15 @@
 
 #define TRANS_NONE -1
 #define TRANS_EPSILON -2
-#define TRANS_LETRA -3
-#define TRANS_DIXITO -4
-#define TRANS_ESPAZO -5
-#define TRANS_ANY -6
-#define TRANS_SHORTSTRING_DOUBLE -7
-#define TRANS_SHORTSTRING_SINGLE -8
+#define TRANS_LETRA -3               // [a-zA-Z]
+#define TRANS_DIXITO -4              // [0-9]
+#define TRANS_DIXITO_NON_CERO -5     // [1-9]
+#define TRANS_DIXITO_OCTAL -6        // [0-7]
+#define TRANS_DIXITO_HEX -7          // [0-9a-fA-F]
+#define TRANS_ESPAZO -8              // isspace
+#define TRANS_ANY -9                 // .
+#define TRANS_SHORTSTRING_DOUBLE -10 // [^\n']
+#define TRANS_SHORTSTRING_SINGLE -11 // [^\n"]
 
 static inline Trans trans_char(Trans ch) {
     switch (ch) {
@@ -98,6 +110,12 @@ static inline Trans trans_char(Trans ch) {
         return 'w';
     case TRANS_DIXITO:
         return 'd';
+    case TRANS_DIXITO_NON_CERO:
+        return 'D';
+    case TRANS_DIXITO_OCTAL:
+        return 'o';
+    case TRANS_DIXITO_HEX:
+        return 'x';
     case TRANS_ESPAZO:
         return 's';
     case TRANS_ANY:
@@ -110,6 +128,9 @@ static inline Trans trans_char(Trans ch) {
         return ' ';
     }
 }
+
+// Tamaño máximo do lexema (limitado polos buffers de entrada e saída)
+#define MAX_BUF_LEN 32
 
 // ··········
 // Utilidades

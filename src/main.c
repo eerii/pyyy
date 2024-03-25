@@ -18,20 +18,11 @@
 // - Execución (imos pedindo o siguiente compoñente léxico ata o final)
 // - Finalización (liberar toda a memoria, feito grazas á arena)
 
-// Revisar C23
-// - constexpr
-// - compound literals
-// - auto
-// - varadic functions (info etc)
-
-// Gestión de errores
-// Mirar MUCHO la memoria
-
-// Imprimir la tabla de simbolos inicial/final
-
-#include "tipos/arena.h"
+// TODO: Imprimir la tabla de simbolos inicial/final
 
 #include "lexico.h"
+#include "tipos/arena.h"
+#include "ts.h"
 
 // Definición da arena global
 Arena arena;
@@ -39,6 +30,7 @@ Arena arena;
 i32 main() {
     arena_init(&arena);
     automatas_init();
+    ts_init();
 
     Centinela c;
     if (!centinela_init(&c, "docs/wilcoxon.py")) {
@@ -49,7 +41,7 @@ i32 main() {
     i32 limite = 0;
     while ((l = seguinte_lexico(&c)) != EOF) {
         limite++;
-        if (limite == 3)
+        if (limite == 10)
             break;
         // ...
     }

@@ -1,28 +1,50 @@
 #include "lexico.h"
 #include "estados/afd.h"
 #include "estados/regex.h"
+#include "ts.h"
 #include <sys/stat.h>
 
 // Lista cos autómatas formales definidos e os seus índices
 // A sintexe de expresións regulares que admitimos é moi moi básica
 // Non hai precedencia de operadores así que é necesario utilizar parénteses
 // Permitense alternancia (a|b), concatenacion (ab), e repeticións (a*, a+, a?)
-// Tamén permítense as clases de caracteres letra (\w), dixito (\d), espazo (\s)
-// e calqueira (\.), co requisito de escapar a barra
+// Tamén permítense as clases de caracteres (ver definicions.h)
 typedef enum {
     R_ESPAZO,
     R_STRING_DOUBLE,
     R_STRING_SINGLE,
-    R_MULTISTRING,
+    R_STRING_MULTI,
+    R_IDENTIFICADORES,
+    R_INTEGER,
+    R_INTEGER_BASE,
+    R_FLOAT_FRAC,
+    R_FLOAT_DOT,
+    R_FLOAT_EXP,
+    R_DELIMITADORES,
+    R_DELIMITADORES_IGUAL,
+    R_OPERADORES,
     COUNT,
     PENDENTE
 } Automata;
 const char* regex[COUNT] = {
-    "\\s",            // ESPAZO
-    "\"\\'*\"",       // STRING DOUBLE
-    "'\\\"*'",        // STRING SINGLE
-    "\"\"\".*\"\"\"", // MULTISTRING
+    "\\s",                                      // ESPAZO
+    "\"\\'*\"",                                 // STRING DOUBLE
+    "'\\\"*'",                                  // STRING SINGLE
+    "\"\"\".*\"\"\"",                           // STRING_MULTI
+    "(\\w|_)(\\w|\\d|_)*",                      // IDENTIFICADRES
+    "(\\D\\d*)|0+",                             // INTEGER
+    "0(((x|X)\\x+)|((o|O)\\o+)|((b|B)(0|1)+))", // INTEGER_BASE
+    "(\\d*\\.\\d+)",                            // FLOAT_FRAC
+    "((\\d+)\\.)",                              // FLOAT_DOT
+    "(\\d+)(e|E)(\\+|-)?\\d*",                  // FLOAT_EXP
+    "(\\(|\\)|[|]|{|}|,|:|\\.|;|@)",            // DELIMITADORES
+    "\\+?=",                                    // DELIMITADORES_IGUAL
+    "(\\+|-|(\\*\\*?)|/|%|@|(<<?)|(>>?)|&|\\||^|~|((:|=|!|>|<)=))", // OPERADORES
+
 };
+
+const char delim[] = {'(', ')', '[', ']', '{', '}',  ',',
+                      ':', '.', ';', '@', ' ', '\n', '\t'};
 
 // Lista onde se gardarán os autómatas construídos
 typedef struct {
@@ -73,6 +95,16 @@ void _reset_automatas() {
         automatas[i].actual = &automatas[i].afd.data[0];
     }
     ultimo_aceptado = INT8_MIN;
+}
+
+// Comproba se o caracter é un delimitador
+bool _es_delim(char ch) {
+    for (u32 i = 0; i < sizeof(delim); ++i) {
+        if (ch == delim[i]) {
+            return true;
+        }
+    }
+    return false;
 }
 
 // ---
@@ -133,16 +165,33 @@ u32 seguinte_lexico(Centinela* c) {
             if (res == INT8_MIN) {
                 err("erro de sintaxe: non se recoñeceu ningun autómata\n");
             } else {
-                if (res == R_ESPAZO) {
+                if (res == R_ESPAZO) { // TODO: || _es_delim(ch)) {
                     centinela_prev(c);
-                } else {
-                    dbg("automata completado: %d\n\n", res);
                 }
+                dbg("automata completado: %d\n\n", res);
                 centinela_inicio(c);
 
                 switch (res) {
-                case R_STRING_DOUBLE || R_STRING_SINGLE || R_MULTISTRING:
+                case R_IDENTIFICADORES:
+                    Str id = centinela_str(c);
+                    if (ts_contains(id)) {
+                        info("%s\n", id.data);
+                    } else {
+                        // ts_ins(id, ID);
+                    }
+                    return ID;
+                case R_STRING_DOUBLE:
+                case R_STRING_SINGLE:
+                case R_STRING_MULTI:
                     return LITERAL;
+                case R_INTEGER:
+                case R_INTEGER_BASE:
+                case R_FLOAT_DOT:
+                case R_FLOAT_FRAC:
+                case R_FLOAT_EXP:
+                    return LITERAL;
+                case R_OPERADORES:
+                // TODO: Comprobar dobles
                 default:
                     break;
                 };

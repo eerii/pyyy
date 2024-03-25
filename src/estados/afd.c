@@ -150,8 +150,13 @@ EstadoAFD* afd_delta(const AFD* a, EstadoAFD* actual, Trans c) {
 
     // Se non hai transición definida, buscamos clases de caracteres
     try_char(TRANS_LETRA, isalpha(c));
-    try_char(TRANS_DIXITO, isdigit(c));
     try_char(TRANS_ESPAZO, isspace(c));
+
+    try_char(TRANS_DIXITO, isdigit(c));
+    try_char(TRANS_DIXITO_NON_CERO, isdigit(c) && c != '0');
+    try_char(TRANS_DIXITO_OCTAL, isdigit(c) && c != '8' && c != '9');
+    try_char(TRANS_DIXITO_HEX,
+             isdigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
 
     try_char(TRANS_SHORTSTRING_DOUBLE, c != '\\' && c != '"' && c != '\n');
     try_char(TRANS_SHORTSTRING_SINGLE, c != '\\' && c != '\'' && c != '\n');
