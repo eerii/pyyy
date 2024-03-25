@@ -4,7 +4,7 @@
 typedef HashTree(Str, u16) TablaSimbolos;
 
 // Taboa de símbolos global
-static TablaSimbolos* ts = NULL;
+extern TablaSimbolos* ts;
 
 // Inserta un par valor/chave na taboa de símbolos
 //      @param key: Chave a insertar
@@ -13,11 +13,25 @@ static inline void ts_ins(Str key, u16 val) {
     *hash_ins(ts, key, &arena) = val;
 }
 
+// Obtén o valor dunha chave na taboa de símbolos
+//      @param key: Chave a buscar
+//      @return: Valor correspondente
+static inline u16 ts_get(Str key) { return *hash_ins(ts, key, &arena); }
+
 // Comproba se unha clave existe na taboa de símbolos
 //      @param key: Chave a comprobar
 //      @return: True se existe, false en caso contrário
 static inline bool ts_contains(Str key) {
     return hash_ins(ts, key, NULL) != NULL;
+}
+
+// Imprime a táboa de símbolos (so en debug)
+static inline void ts_print() {
+#ifdef DEBUG
+    dbg("-------ts-------\n");
+    hash_for_each(ts, h, { dbg("%s %d\n", h->key.data, h->value); });
+    dbg("----------------\n\n");
+#endif
 }
 
 // Inicializa a táboa de símbolos cargando todas as palabras reservadas
@@ -62,4 +76,6 @@ static inline void ts_init() {
     ts_ins(str("case"), CASE);
     ts_ins(str("type"), TYPE);
     ts_ins(str("_"), UNDERSCORE);
+
+    ts_print();
 }

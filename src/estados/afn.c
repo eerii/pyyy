@@ -216,7 +216,7 @@ void afn_free(AFN* a) {
     VecEstado s = vec_new(VecEstado);
     vec_push(s, a->inicio);
     afn_visit(&s, a->inicio);
-    vec_for_each(s, e, arena_del(&arena, (u8*)(e), sizeof(Estado)));
+    vec_for_each(s, e, arena_del(&arena, (u8*)(e), sizeof(Estado*)));
     vec_free(s);
 }
 

@@ -151,39 +151,57 @@ static inline void centinela_inicio(Centinela* c) {
 
 // Obtén a cadena de caracteres representada actualmente no centinela
 //      @param c: Centinela
-//      @return: Cadea de caracteres
-static inline Str centinela_str(Centinela* c) {
-    Str s;
+//      @param s: Cadea de caracteres
+static inline void centinela_str(Centinela* c, Str* s) {
+    if (!c) {
+        err("centinela nulo");
+        return;
+    }
 
-    // Caso no que hai un erro (devolvese o máximo posible dende o inicio)
+    if (c->inicio == c->actual) {
+        return;
+    }
+
+    i32 a = c->inicio - c->datos;
+    i32 b = c->actual - c->datos;
+    u8* m = c->datos + MAX_BUF_LEN + 1;
+
     if (c->erro_tam_max) {
-        vec_init_res(s, MAX_BUF_LEN);
-        // Inicio está na segunda metade
-        if (c->inicio > c->datos + MAX_BUF_LEN + 1) {
-        }
-        // Inicio está na primeira metade
-        else {
+        // TODO: Erro max
+        return;
+    }
+
+    // Inicio está na segunda metade
+    if (a > MAX_BUF_LEN) {
+        // Actual está na segunda metade
+        if (b > MAX_BUF_LEN) {
+            assert(b > a);
+            vec_init_res((*s), (b - a));
+            vec_append_n((*s), c->inicio, (b - a));
+        } else {
+            i32 da = MAX_BUF_LEN * 2 + 1 - a;
+            vec_init_res((*s), (da + b));
+            vec_append_n((*s), c->inicio, da);
+            vec_append_n((*s), c->datos, b);
         }
     }
-    // Caso no que non hai erro (devolvese de inicio a actual)
+    // Inicio está na primeira metade
     else {
-        //     // Inicio está na segunda metade
-        if (c->inicio > c->datos + MAX_BUF_LEN + 1) {
-
+        // Actual está na segunda metade
+        if (b > MAX_BUF_LEN) {
+            i32 da = MAX_BUF_LEN - a;
+            i32 db = b - MAX_BUF_LEN;
+            vec_init_res((*s), (da + db));
+            vec_append_n((*s), c->inicio, da);
+            vec_append_n((*s), m, db);
         }
-        //     // Inicio está na primeira metade
+        // Actual está na primeira metade
         else {
-            // Actual está na primeira metade
-            if (c->actual > c->inicio) {
-                vec_init_res(s, (c->actual - c->inicio));
-                vec_append_n(s, c->inicio, (c->actual - c->inicio));
-            }
-            // Actual está na segunda metade
-            else {
-            }
+            assert(b > a);
+            vec_init_res((*s), (b - a));
+            vec_append_n((*s), c->inicio, (b - a));
         }
     }
 
-    vec_push(s, '\0');
-    return s;
+    vec_push((*s), '\0');
 }

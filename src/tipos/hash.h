@@ -60,9 +60,7 @@ static inline u64 hash_32(u32 key) {
     return h + _hash_32(key ^ h);
 }
 
-// Función "hash" para caracteres
-// Simplemente devolve o caracter (non vamos a hashear 255 números)
-// Tal como funciona o hashmap, o máis importante son estes primeiros bits
+// Función hash para caracteres
 //      @param key: Chave a hashear
 static inline u64 hash_8(u8 key) { return (u64)key; }
 
@@ -73,9 +71,9 @@ static inline u64 hash_8(u8 key) { return (u64)key; }
     _Generic((K),                                                              \
         Str: hash_str,                                                         \
         i8: hash_8,                                                            \
-        u8: hash_8,                                                            \
         i32: hash_32,                                                          \
         i64: hash_64,                                                          \
+        u8: hash_8,                                                            \
         u32: hash_32,                                                          \
         u64: hash_64)(K)
 
@@ -84,9 +82,9 @@ static inline u64 hash_8(u8 key) { return (u64)key; }
     static inline bool equals_##T(T a, T b) { return a == b; }
 
 _equals(i8);
-_equals(u8);
 _equals(i32);
 _equals(i64);
+_equals(u8);
 _equals(u32);
 _equals(u64);
 
@@ -98,9 +96,9 @@ _equals(u64);
     _Generic((A),                                                              \
         Str: equals_str,                                                       \
         i8: equals_i8,                                                         \
-        u8: equals_u8,                                                         \
         i32: equals_i32,                                                       \
         i64: equals_i64,                                                       \
+        u8: equals_u8,                                                         \
         u32: equals_u32,                                                       \
         u64: equals_u64)(A, B)
 
@@ -144,7 +142,7 @@ _equals(u64);
     ({                                                                         \
         if (H) {                                                               \
             Vec(typeof(H)) stack;                                              \
-            vec_init(stack);                                                   \
+            vec_init_res(stack, 4);                                            \
             vec_push(stack, H);                                                \
             while (stack.len > 0) {                                            \
                 auto VAR = *vec_pop(stack);                                    \
@@ -158,8 +156,3 @@ _equals(u64);
             vec_free(stack);                                                   \
         }                                                                      \
     })
-
-// Elimina un hashmap de memoria
-//      @param H: Hashmap a eliminar
-#define hash_free(H)                                                           \
-    hash_for_each(H, x, arena_del(&arena, (u8*)x, sizeof(typeof(*H))));

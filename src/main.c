@@ -24,42 +24,54 @@
 #include "tipos/arena.h"
 #include "ts.h"
 
-// Definición da arena global
+// Definición das variables globais
 Arena arena;
+TablaSimbolos* ts;
 
 i32 main() {
+    // Inicializamos os subsistemas correspondentes
     arena_init(&arena);
     automatas_init();
     ts_init();
 
+    // Creamos o dobre centinela do sistema de entrada
     Centinela c;
-    if (!centinela_init(&c, "docs/wilcoxon.py")) {
+    if (!centinela_init(&c, "wilcoxon.py")) {
         return 1;
     }
 
-    i32 l;
+    // Obtemos os tokens léxicos
+    Lexema l;
     i32 limite = 0;
-    while ((l = seguinte_lexico(&c)) != EOF) {
+    while ((l = seguinte_lexico(&c)).codigo != EOF) {
+        printf("%d\n", l.codigo);
+
         limite++;
         if (limite == 10)
             break;
         // ...
     }
 
-    info("tam arena: %lu/%lu\n", arena_len(arena), arena_cap(arena));
+    // Imprimir detalles sobre a ocupación da arena de memoria
+    dbg("tam arena: %lu/%lu\n", arena_len(arena), arena_cap(arena));
     Tumba* t = arena.eliminados;
     u32 num_tumbas = 0;
     u32 tam_tumbas = 0;
-    info("tumbas:");
+    dbg("tumbas:");
     while (t) {
         printf("%u:%u,", num_tumbas++, t->tam);
         tam_tumbas += t->tam;
         t = t->sig;
     }
     printf("\n");
-    info("total: %u, tam: %u\n", num_tumbas, tam_tumbas);
-    info("arena ocupada real: %u\n\n", (u32)arena_len(arena) - tam_tumbas);
+    dbg("total: %u, tam: %u\n", num_tumbas, tam_tumbas);
+    dbg("arena ocupada real: %u\n\n", (u32)arena_len(arena) - tam_tumbas);
 
+    // Imprimir a táboa de símbolos
+    // ts_print();
+
+    // Todas as alocacións do programa están feitas na arena de memoria
+    // Por iso limpar a memoria é moi sinxelo e pode facerse cun só comando
     arena_free(&arena);
     return 0;
 }

@@ -20,12 +20,13 @@ typedef enum {
     R_FLOAT_FRAC,
     R_FLOAT_DOT,
     R_FLOAT_EXP,
-    R_DELIMITADORES,
-    R_DELIMITADORES_IGUAL,
-    R_OPERADORES,
+    // R_DELIMITADORES,
+    // R_DELIMITADORES_IGUAL,
+    // R_OPERADORES,
     COUNT,
     PENDENTE
 } Automata;
+
 const char* regex[COUNT] = {
     "\\s",                                      // ESPAZO
     "\"\\'*\"",                                 // STRING DOUBLE
@@ -36,12 +37,20 @@ const char* regex[COUNT] = {
     "0(((x|X)\\x+)|((o|O)\\o+)|((b|B)(0|1)+))", // INTEGER_BASE
     "(\\d*\\.\\d+)",                            // FLOAT_FRAC
     "((\\d+)\\.)",                              // FLOAT_DOT
-    "(\\d+)(e|E)(\\+|-)?\\d*",                  // FLOAT_EXP
-    "(\\(|\\)|[|]|{|}|,|:|\\.|;|@)",            // DELIMITADORES
-    "\\+?=",                                    // DELIMITADORES_IGUAL
-    "(\\+|-|(\\*\\*?)|/|%|@|(<<?)|(>>?)|&|\\||^|~|((:|=|!|>|<)=))", // OPERADORES
-
+    "(\\d+)(e|E)(\\+|-)?\\d+",                  // FLOAT_EXP
+    // "(\\(|\\)|[|]|{|}|,|:|\\.|;|@)",            // DELIMITADORES
+    // "\\+?=",                                    // DELIMITADORES_IGUAL
+    // "(\\+|-|(\\*\\*?)|/|%|@|(<<?)|(>>?)|&|\\||^|~|((:|=|!|>|<)=))", //OPERADORES
 };
+
+#ifdef DEBUG
+const char* regex_nomes[COUNT] = {
+    "espazo",        "string (double)", "string (single)", "string (multi)",
+    "identificador", "integer",         "integer (base)",  "float (frac)",
+    "float (dot)",   "float (exp)",
+    // "delimitador", "delimitador (igual)", "operador",
+};
+#endif
 
 const char delim[] = {'(', ')', '[', ']', '{', '}',  ',',
                       ':', '.', ';', '@', ' ', '\n', '\t'};
@@ -132,13 +141,7 @@ void automatas_init() {
 
 // Análise léxico
 // Devolve o seguinte lexema detectado
-u32 seguinte_lexico(Centinela* c) {
-    // TODO: Funcións de expresións regulares
-    //      - Identificador alfanumérico
-    //      - Número
-    //      - Operadores ...
-    //      Mirar se podo usar regex en c
-
+Lexema seguinte_lexico(Centinela* c) {
     while (true) {
         // return EOF;
 
@@ -146,7 +149,7 @@ u32 seguinte_lexico(Centinela* c) {
 
         // Comprobar fin de arquivo
         if (ch == EOF) {
-            return ch;
+            return (Lexema){.codigo = EOF};
         }
 
         // Comprobar comentario
@@ -165,33 +168,39 @@ u32 seguinte_lexico(Centinela* c) {
             if (res == INT8_MIN) {
                 err("erro de sintaxe: non se recoñeceu ningun autómata\n");
             } else {
-                if (res == R_ESPAZO) { // TODO: || _es_delim(ch)) {
+                dbg("aceptado: %s\n\n", regex_nomes[res]);
+
+                if (res == R_IDENTIFICADORES) {
+                    Str id;
+                    centinela_str(c, &id);
+                    if (ts_contains(id)) {
+                        dbg("ts: %s %d\n\n", id.data, ts_get(id));
+                    } else {
+                        ts_ins(id, ID);
+                        dbg("ts: %s %d (novo)\n\n", id.data, ts_get(id));
+                    }
+                }
+
+                centinela_inicio(c);
+                if (res == R_ESPAZO || _es_delim(ch)) {
                     centinela_prev(c);
                 }
-                dbg("automata completado: %d\n\n", res);
-                centinela_inicio(c);
 
                 switch (res) {
                 case R_IDENTIFICADORES:
-                    Str id = centinela_str(c);
-                    if (ts_contains(id)) {
-                        info("%s\n", id.data);
-                    } else {
-                        // ts_ins(id, ID);
-                    }
-                    return ID;
+                    return (Lexema){.codigo = ID};
                 case R_STRING_DOUBLE:
                 case R_STRING_SINGLE:
                 case R_STRING_MULTI:
-                    return LITERAL;
                 case R_INTEGER:
                 case R_INTEGER_BASE:
                 case R_FLOAT_DOT:
                 case R_FLOAT_FRAC:
                 case R_FLOAT_EXP:
-                    return LITERAL;
-                case R_OPERADORES:
+                    return (Lexema){.codigo = res};
+                // case R_OPERADORES:
                 // TODO: Comprobar dobles
+                // return ch;
                 default:
                     break;
                 };
@@ -199,5 +208,5 @@ u32 seguinte_lexico(Centinela* c) {
         }
     }
 
-    return 0;
+    return (Lexema){.codigo = 0};
 }
