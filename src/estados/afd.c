@@ -67,7 +67,7 @@ void afd_add_trans(AFD* a, u32 dende_i, u32 ata_i, Trans c) {
         return;
     }
 
-    *hash_ins(dende->trans, c, &arena) = ata_i;
+    (*hash_ins(dende->trans, c, &arena))->value = ata_i;
 }
 
 // Convirte un AFN nun AFD
@@ -134,9 +134,9 @@ AFD afn_to_afd(const AFN* a) {
 
 #define try_char(T, C)                                                         \
     if (C) {                                                                   \
-        sig = hash_ins(actual->trans, T, NULL);                                \
+        auto sig = *hash_ins(actual->trans, T, NULL);                                \
         if (sig)                                                               \
-            return &a->data[*sig];                                             \
+            return &a->data[sig->value];                                             \
     }
 
 // Calcula unha transición de estado
@@ -145,7 +145,6 @@ EstadoAFD* afd_delta(const AFD* a, EstadoAFD* actual, Trans c) {
         return NULL;
     }
     // Primeiro comprobamos co caracter literal
-    u32* sig = NULL;
     try_char(c, true);
 
     // Se non hai transición definida, buscamos clases de caracteres

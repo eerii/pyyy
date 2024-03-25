@@ -26,7 +26,7 @@
 
 // Definición das variables globais
 Arena arena;
-TablaSimbolos* ts;
+TaboaSimbolos* ts;
 
 i32 main() {
     // Inicializamos os subsistemas correspondentes
@@ -42,17 +42,30 @@ i32 main() {
 
     // Obtemos os tokens léxicos
     Lexema l;
-    i32 limite = 0;
+    // i32 limite = 0;
     while ((l = seguinte_lexico(&c)).codigo != EOF) {
-        printf("%d\n", l.codigo);
+        char* color;
+        if (l.codigo < 290) { // Outros caracteres
+            color = C_MAGENTA;
+        } else if (l.codigo < 300) { // Lexico base
+            color = l.codigo == ID ? C_CYAN : C_GREEN;
+        } else if (l.codigo < 450) { // Palabras clave
+            color = C_BLUE;
+        } else { // Operadores
+            color = C_YELLOW;
+        }
 
-        limite++;
-        if (limite == 10)
-            break;
+        printf("%s%s (%d)\n" C_RESET, color, l.valor ? l.valor->data : "",
+               l.codigo);
+
+        // limite++;
+        // if (limite == 60)
+        //     break;
         // ...
     }
 
-    // Imprimir detalles sobre a ocupación da arena de memoria
+// Imprimir detalles sobre a ocupación da arena de memoria
+#ifdef DEBUG
     dbg("tam arena: %lu/%lu\n", arena_len(arena), arena_cap(arena));
     Tumba* t = arena.eliminados;
     u32 num_tumbas = 0;
@@ -66,6 +79,7 @@ i32 main() {
     printf("\n");
     dbg("total: %u, tam: %u\n", num_tumbas, tam_tumbas);
     dbg("arena ocupada real: %u\n\n", (u32)arena_len(arena) - tam_tumbas);
+#endif
 
     // Imprimir a táboa de símbolos
     // ts_print();

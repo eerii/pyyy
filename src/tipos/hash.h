@@ -118,20 +118,17 @@ _equals(u64);
 #define hash_ins(H, K, A)                                                      \
     ({                                                                         \
         typeof(H)* hm = &H;                                                    \
-        typeof(H->value)* res = NULL;                                          \
         for (u64 h = hash(K); *hm; h <<= 2) {                                  \
             if (equals(K, (*hm)->key)) {                                       \
-                res = &(*hm)->value;                                           \
                 break;                                                         \
             }                                                                  \
             hm = &(*hm)->child[h >> 62];                                       \
         }                                                                      \
-        if (A != NULL && res == NULL) {                                        \
+        if (A != NULL && *hm == NULL) {                                        \
             *hm = arena_push_struct_zero(A, typeof(*H));                       \
             (*hm)->key = K;                                                    \
-            res = &(*hm)->value;                                               \
         }                                                                      \
-        res;                                                                   \
+        hm;                                                                    \
     })
 
 // Percorre o hashmap executando unha función para cada elemento

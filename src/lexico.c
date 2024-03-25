@@ -20,9 +20,8 @@ typedef enum {
     R_FLOAT_FRAC,
     R_FLOAT_DOT,
     R_FLOAT_EXP,
-    // R_DELIMITADORES,
-    // R_DELIMITADORES_IGUAL,
-    // R_OPERADORES,
+    R_DELIMITADORES,
+    R_OPERADORES,
     COUNT,
     PENDENTE
 } Automata;
@@ -38,22 +37,21 @@ const char* regex[COUNT] = {
     "(\\d*\\.\\d+)",                            // FLOAT_FRAC
     "((\\d+)\\.)",                              // FLOAT_DOT
     "(\\d+)(e|E)(\\+|-)?\\d+",                  // FLOAT_EXP
-    // "(\\(|\\)|[|]|{|}|,|:|\\.|;|@)",            // DELIMITADORES
-    // "\\+?=",                                    // DELIMITADORES_IGUAL
-    // "(\\+|-|(\\*\\*?)|/|%|@|(<<?)|(>>?)|&|\\||^|~|((:|=|!|>|<)=))", //OPERADORES
+    "(\\(|\\)|[|]|{|}|,|:|\\.|;|@|(\\+?=))",    // DELIMITADORES
+    "(\\+|-|(\\*\\*?)|/|%|((!|<|>|=)=)|>|<|&|\\||^|~)",        //OPERADORES
 };
 
 #ifdef DEBUG
 const char* regex_nomes[COUNT] = {
     "espazo",        "string (double)", "string (single)", "string (multi)",
     "identificador", "integer",         "integer (base)",  "float (frac)",
-    "float (dot)",   "float (exp)",
-    // "delimitador", "delimitador (igual)", "operador",
+    "float (dot)",   "float (exp)", "delimitador", "operador",
 };
 #endif
 
-const char delim[] = {'(', ')', '[', ']', '{', '}',  ',',
-                      ':', '.', ';', '@', ' ', '\n', '\t'};
+const char delim[] = {'(', ')', '[', ']', '{', '}', ',', '!',
+                      ':', '.', ';', '@', '=', ' ', '\n', '\t',
+                      '+', '-', '*', '<', '>', '/', '%', '&'};
 
 // Lista onde se gardarán os autómatas construídos
 typedef struct {
@@ -116,6 +114,11 @@ bool _es_delim(char ch) {
     return false;
 }
 
+// Comproba se o resultado emite un lexema
+bool _emite_lexema(i32 res) {
+    return res != R_ESPAZO && res != R_DELIMITADORES;
+}
+
 // ---
 // API
 // ---
@@ -170,43 +173,70 @@ Lexema seguinte_lexico(Centinela* c) {
             } else {
                 dbg("aceptado: %s\n\n", regex_nomes[res]);
 
-                if (res == R_IDENTIFICADORES) {
-                    Str id;
-                    centinela_str(c, &id);
-                    if (ts_contains(id)) {
-                        dbg("ts: %s %d\n\n", id.data, ts_get(id));
-                    } else {
-                        ts_ins(id, ID);
-                        dbg("ts: %s %d (novo)\n\n", id.data, ts_get(id));
-                    }
+                Str key;
+                centinela_str(c, &key);
+                Lexema l = {.codigo = 0, .valor = NULL};
+
+                if (_emite_lexema(res)) {
+                    u16 tipo = 0;
+                    switch (res) {
+                        case R_IDENTIFICADORES:
+                            tipo = ID;
+                            break;
+                        case R_STRING_DOUBLE:
+                        case R_STRING_SINGLE:
+                        case R_STRING_MULTI:
+                        case R_INTEGER:
+                        case R_INTEGER_BASE:
+                        case R_FLOAT_DOT:
+                        case R_FLOAT_FRAC:
+                        case R_FLOAT_EXP:
+                            tipo = LITERAL;
+                            break;
+                        case R_OPERADORES:
+                            if (ch == '=') {
+                                switch (key.data[0]) {
+                                    case '=':
+                                        tipo = OP_EQ;
+                                        break;
+                                    case '!':
+                                        tipo = OP_NEQ;
+                                        break;
+                                    case '<':
+                                        tipo = OP_LEQ;
+                                        break;
+                                    case '>':
+                                        tipo = OP_GEQ;
+                                        break;
+                                    default:
+                                        err("erro de sintaxe: operador .= incorrecto");
+                                }
+                            } else if (ch == '*') {
+                                if (key.len == 1) {
+                                    tipo = '*';
+                                } else if (key.data[0] == '*') {
+                                    tipo = OP_STAR_STAR;
+                                } else {
+                                    err("erro de sintaxe: operador ** incorrecto");
+                                }
+                            } else {
+                                tipo = ch;
+                            }
+                    };
+
+                    ts_ins(key, tipo, &l);
                 }
 
                 centinela_inicio(c);
+
                 if (res == R_ESPAZO || _es_delim(ch)) {
                     centinela_prev(c);
                 }
 
-                switch (res) {
-                case R_IDENTIFICADORES:
-                    return (Lexema){.codigo = ID};
-                case R_STRING_DOUBLE:
-                case R_STRING_SINGLE:
-                case R_STRING_MULTI:
-                case R_INTEGER:
-                case R_INTEGER_BASE:
-                case R_FLOAT_DOT:
-                case R_FLOAT_FRAC:
-                case R_FLOAT_EXP:
-                    return (Lexema){.codigo = res};
-                // case R_OPERADORES:
-                // TODO: Comprobar dobles
-                // return ch;
-                default:
-                    break;
-                };
+                if (_emite_lexema(res)) {
+                    return l;
+                }
             }
         }
     }
-
-    return (Lexema){.codigo = 0};
 }

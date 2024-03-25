@@ -102,17 +102,9 @@ AFN _afn_expr_char(char** c) {
         case '\'':
             ch = TRANS_SHORTSTRING_SINGLE;
             break;
-        case '+':
-        case '*':
-        case '|':
-        case '.':
-        case '(':
-        case ')':
-            ch = **c;
-            escaped = true;
-            break;
         default:
             ch = **c;
+            escaped = true;
         }
     }
 
