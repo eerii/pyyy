@@ -10,7 +10,7 @@
 // Recoméndase utilizar abundantes parénteses () para definir claramente a
 // prioridade de operacións
 //
-// Pódense escapar os caracteres da sintexe utilizando \\
+// Pódense escapar os caracteres da sintexe utilizando '\\'
 // Ademáis, engade as seguintes clases de caracteres para facilitar escribir
 // expresións e para mellorar e eficiencia e cantidade de memoria utilizada.
 // Estas clases están baseadas na sintaxe de python:

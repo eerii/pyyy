@@ -64,6 +64,7 @@
 #define OP_LEQ 452
 #define OP_GEQ 453
 #define OP_STAR_STAR 454
+#define OP_PLUS_EQ 455
 
 // Espazos en blanco *non* son tokens
 

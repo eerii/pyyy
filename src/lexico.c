@@ -122,9 +122,7 @@ bool _es_delim(char ch) {
 }
 
 // Comproba se o resultado emite un lexema
-bool _emite_lexema(i32 res) {
-    return res != R_ESPAZO && res != R_DELIMITADORES;
-}
+bool _emite_lexema(i32 res) { return res != R_ESPAZO; }
 
 // ---
 // API
@@ -207,6 +205,7 @@ Lexema seguinte_lexico() {
                         tipo = LITERAL;
                         break;
                     case R_OPERADORES:
+                    case R_DELIMITADORES:
                         if (ch == '=') {
                             switch (key.data[0]) {
                             case '=':
@@ -220,6 +219,9 @@ Lexema seguinte_lexico() {
                                 break;
                             case '>':
                                 tipo = OP_GEQ;
+                                break;
+                            case '+':
+                                tipo = OP_PLUS_EQ;
                                 break;
                             default:
                                 err("lexico: operador .= incorrecto");
@@ -241,12 +243,9 @@ Lexema seguinte_lexico() {
                 }
 
                 // Colocamos o punteiro de inicio onde está o actual
+                // e devolvemos o caracter ó sistema de entrada
                 entrada_inicio();
-
-                // Devolvemos o caracter ó sistema de entrada se é necesario
-                if (res == R_ESPAZO || _es_delim(ch)) {
-                    entrada_prev();
-                }
+                entrada_prev();
 
                 // Se emite un lexema, devolvelo
                 if (_emite_lexema(res)) {
