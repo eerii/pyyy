@@ -72,6 +72,7 @@ static inline u64 hash_8(u8 key) { return (u64)key; }
 #define hash(K)                                                                \
     _Generic((K),                                                              \
         Str: hash_str,                                                         \
+        i8: hash_8,                                                            \
         u8: hash_8,                                                            \
         i32: hash_32,                                                          \
         i64: hash_64,                                                          \
@@ -82,6 +83,7 @@ static inline u64 hash_8(u8 key) { return (u64)key; }
 #define _equals(T)                                                             \
     static inline bool equals_##T(T a, T b) { return a == b; }
 
+_equals(i8);
 _equals(u8);
 _equals(i32);
 _equals(i64);
@@ -95,6 +97,7 @@ _equals(u64);
 #define equals(A, B)                                                           \
     _Generic((A),                                                              \
         Str: equals_str,                                                       \
+        i8: equals_i8,                                                         \
         u8: equals_u8,                                                         \
         i32: equals_i32,                                                       \
         i64: equals_i64,                                                       \

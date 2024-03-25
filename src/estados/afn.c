@@ -26,7 +26,7 @@ u8 _trans_count(const Estado* e) {
 }
 
 // Engade unha transición de un estado a outro cun caracter
-bool _afn_add(Estado* dende, char c, Estado* ata) {
+bool _afn_add(Estado* dende, Trans c, Estado* ata) {
     int i = _trans_count(dende);
     if (i >= 2) {
         return false;
@@ -41,13 +41,11 @@ void _afn_graph_trans(const Estado* e, u8 to, FILE* f) {
     switch (e->trans[to]) {
     case TRANS_NONE:
         break;
-    case TRANS_EPSILON:
-        fprintf(f, "    addr_%p -> addr_%p [ label = \"\u03B5\" ];\n", (void*)e,
-                (void*)e->to[to]);
-        break;
     default:
-        fprintf(f, "    addr_%p -> addr_%p [ label = \"%c\" ];\n", (void*)e,
-                (void*)e->to[to], e->trans[to]);
+        fprintf(
+            f, "    addr_%p -> addr_%p [ label = \"%c%c%c\" ];\n", (void*)e,
+            (void*)e->to[to], e->trans[to] < TRANS_NONE ? '\\' : e->trans[to],
+            e->trans[to] < TRANS_NONE ? '\\' : ' ', trans_char(e->trans[to]));
         break;
     }
 }
@@ -81,7 +79,7 @@ void _afn_clausura_rec(VecEstado* s, const Estado* e) {
 // ---
 
 // Crea un autómata con dous estados que acepta o caracter c
-AFN afn_atomic(char c) {
+AFN afn_atomic(Trans c) {
     AFN a = {_estado(), _estado()};
     _afn_add(a.inicio, c, a.fin);
     return a;
@@ -201,10 +199,10 @@ Str afn_simbolos(const AFN* a) {
     afn_visit(&s, a->inicio);
 
     vec_for_each(s, e, {
-        if (e->trans[0] > TRANS_EPSILON) {
+        if (e->trans[0] != TRANS_EPSILON && e->trans[0] != TRANS_NONE) {
             vec_push(simbolos, e->trans[0]);
         }
-        if (e->trans[1] > TRANS_EPSILON) {
+        if (e->trans[1] != TRANS_EPSILON && e->trans[1] != TRANS_NONE) {
             vec_push(simbolos, e->trans[1]);
         }
     });

@@ -64,10 +64,41 @@ AFN _afn_expr_rep(char** c) {
 
 // Paso final do algoritmo recursivo
 // Faise cargo dos caracteres e dos parénteses
+// Tamén reemplaza os caracteres escapados con \ polas suas clases
 //      @param c: Punteiro ó punto da expresión regular no que estamos
 AFN _afn_expr_char(char** c) {
     AFN res;
     char ch = **c;
+
+    if (ch == '.') { // Calqueira
+        ch = TRANS_ANY;
+    }
+
+    if (ch == '\\') { // Caracter escapado
+        *c += 1;      // Seguinte símbolo
+        switch (**c) {
+        case 'w':
+            ch = TRANS_LETRA;
+            break;
+        case 'd':
+            ch = TRANS_DIXITO;
+            break;
+        case 's':
+            ch = TRANS_ESPAZO;
+            break;
+        case '"':
+            ch = TRANS_SHORTSTRING_DOUBLE;
+            break;
+        case '\'':
+            ch = TRANS_SHORTSTRING_SINGLE;
+            break;
+        case '.':
+            ch = '.';
+            break;
+        default:
+            ch = **c;
+        }
+    }
 
     if (ch == '(') { // Parénteses
         *c += 1;     // Seguinte símbolo
@@ -88,10 +119,7 @@ AFN _afn_expr_char(char** c) {
 // ---
 
 // Convirte unha expresión regular a un AFN
-AFN regex_to_afn(const char* regex) { return _afn_expr((char**)(&regex)); }
-
-// É un caracter válido
-bool caracter_valido(char ch) {
-    // TODO: Ampliar abecedario
-    return isalnum(ch);
+AFN regex_to_afn(const char* regex) {
+    dbg("regex: %s\n", regex);
+    return _afn_expr((char**)(&regex));
 }

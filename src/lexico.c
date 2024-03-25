@@ -4,10 +4,24 @@
 #include <sys/stat.h>
 
 // Lista cos autómatas formales definidos e os seus índices
-typedef enum { AB, AA, COUNT, PENDIENTE, NINGUNO } Automata;
-const char* regex[] = {
-    "ab",
-    "im((port)|(part))(ant)*",
+// A sintexe de expresións regulares que admitimos é moi moi básica
+// Non hai precedencia de operadores así que é necesario utilizar parénteses
+// Permitense alternancia (a|b), concatenacion (ab), e repeticións (a*, a+, a?)
+// Tamén permítense as clases de caracteres letra (\w), dixito (\d), espazo (\s)
+// e calqueira (\.), co requisito de escapar a barra
+typedef enum {
+    R_ESPAZO,
+    R_STRING_DOUBLE,
+    R_STRING_SINGLE,
+    R_MULTISTRING,
+    COUNT,
+    PENDENTE
+} Automata;
+const char* regex[COUNT] = {
+    "\\s",            // ESPAZO
+    "\"\\'*\"",       // STRING DOUBLE
+    "'\\\"*'",        // STRING SINGLE
+    "\"\"\".*\"\"\"", // MULTISTRING
 };
 
 // Lista onde se gardarán os autómatas construídos
@@ -17,6 +31,7 @@ typedef struct {
 } ExecAFD;
 
 ExecAFD automatas[COUNT];
+i32 ultimo_aceptado;
 
 // Comproba se estamos nun comentario de liña (ignora o resto da liña fisica)
 bool comentario_linha = false;
@@ -29,24 +44,27 @@ bool comentario_linha = false;
 //      @param ch: Caracter a iterar
 //      @return: Se hai aceptación, índice do primeiro autómata que acepta
 //               Se non, devolve -1
-u32 _percorrer_automatas(char ch) {
-    u32 no_aceptados = 0;
+i32 _percorrer_automatas(Trans ch) {
+    i32 non_aceptados = 0;
     for (Automata i = 0; i < COUNT; ++i) {
         ExecAFD* e = &automatas[i];
         if (!e->actual) {
-            no_aceptados++;
+            non_aceptados++;
             continue;
         }
 
         e->actual = afd_delta(&e->afd, e->actual, ch);
 
         if (!e->actual) {
-            no_aceptados++;
+            non_aceptados++;
         } else if (e->actual->final) {
-            return i;
+            ultimo_aceptado = i;
         }
     }
-    return no_aceptados == COUNT ? NINGUNO : PENDIENTE;
+    if (non_aceptados == COUNT) {
+        return ultimo_aceptado;
+    }
+    return PENDENTE;
 }
 
 // Restaura o estado dos autómatas
@@ -54,6 +72,7 @@ void _reset_automatas() {
     for (Automata i = 0; i < COUNT; ++i) {
         automatas[i].actual = &automatas[i].afd.data[0];
     }
+    ultimo_aceptado = INT8_MIN;
 }
 
 // ---
@@ -64,20 +83,19 @@ void _reset_automatas() {
 void automatas_init() {
     for (Automata i = 0; i < COUNT; ++i) {
         AFN afn = regex_to_afn(regex[i]);
-        ExecAFD e = {.afd = afn_to_afd(&afn), .actual = &e.afd.data[0]};
-        assert(&e.afd.data[0] == e.actual);
-        automatas[i] = e;
+        automatas[i].afd = afn_to_afd(&afn);
 
 #ifdef DEBUG
         char out[16];
         sprintf(out, "afd/%d.dot", i);
         mkdir("afd", 0755);
         FILE* f = fopen(out, "w");
-        afd_graph(&e.afd, f);
+        afd_graph(&automatas[i].afd, f);
         fclose(f);
 #endif
         afn_free(&afn);
     }
+    _reset_automatas();
 }
 
 // Análise léxico
@@ -90,7 +108,7 @@ u32 seguinte_lexico(Centinela* c) {
     //      Mirar se podo usar regex en c
 
     while (true) {
-        return EOF;
+        // return EOF;
 
         char ch = centinela_ler(c);
 
@@ -109,13 +127,25 @@ u32 seguinte_lexico(Centinela* c) {
             continue;
         }
 
-        u32 res = _percorrer_automatas(ch);
-        if (res != PENDIENTE) {
+        i32 res = _percorrer_automatas(ch);
+        if (res != PENDENTE) {
             _reset_automatas();
-            if (res != NINGUNO) {
-                info("automata completado: %d\n", res);
+            if (res == INT8_MIN) {
+                err("erro de sintaxe: non se recoñeceu ningun autómata\n");
+            } else {
+                if (res == R_ESPAZO) {
+                    centinela_prev(c);
+                } else {
+                    dbg("automata completado: %d\n\n", res);
+                }
                 centinela_inicio(c);
-                return res;
+
+                switch (res) {
+                case R_STRING_DOUBLE || R_STRING_SINGLE || R_MULTISTRING:
+                    return LITERAL;
+                default:
+                    break;
+                };
             }
         }
     }

@@ -1,5 +1,6 @@
 #include "afd.h"
-#include "regex.h"
+#include "afn.h"
+#include <ctype.h>
 
 // -----------------
 // Funcións internas
@@ -66,7 +67,6 @@ void afd_add_trans(AFD* a, u32 dende_i, u32 ata_i, Trans c) {
         return;
     }
 
-    printf("hi %p %c\n", dende->trans, c);
     *hash_ins(dende->trans, c, &arena) = ata_i;
 }
 
@@ -119,34 +119,47 @@ AFD afn_to_afd(const AFN* a) {
     vec_free(ci);
 
 #ifdef DEBUG
-    dbg("afd: estados - %d, trans - %d\n", afd.len, estados.len);
-    dbg("estados:\n");
+    dbg("-------afd-------\n");
+    dbg("ne - %d, nt - %d\n", afd.len, estados.len);
     vec_for_each(afd, e _U_, {
-        dbg("%u%s\n", e.hash & 0xfff, e.final ? " (final)" : "");
-        hash_for_each(
-            e.trans, t,
-            dbg("\t%c -> %u\n", t->key, afd.data[t->value].hash & 0xfff));
+        dbg("%u%s:\n", e.hash & 0xfff, e.final ? " (final)" : "");
+        hash_for_each(e.trans, t,
+                      dbg("  %c%c -> %u\n", t->key < TRANS_NONE ? '\\' : t->key,
+                          trans_char(t->key), afd.data[t->value].hash & 0xfff));
     });
-    dbg("fin\n");
+    dbg("-----------------\n\n");
 #endif
     return afd;
 }
 
+#define try_char(T, C)                                                         \
+    if (C) {                                                                   \
+        sig = hash_ins(actual->trans, T, NULL);                                \
+        if (sig)                                                               \
+            return &a->data[*sig];                                             \
+    }
+
 // Calcula unha transición de estado
 EstadoAFD* afd_delta(const AFD* a, EstadoAFD* actual, Trans c) {
-    info("a: %p, actual %p, ch: %c, valido: %s\n", a, actual, c,
-         caracter_valido(c) ? "true" : "false");
     if (!actual) {
         return NULL;
     }
-    if (!caracter_valido(c)) {
-        return actual;
-    }
-    u32* sig = hash_ins(actual->trans, c, NULL);
-    if (sig == NULL) {
-        return NULL;
-    }
-    return &a->data[*sig];
+    // Primeiro comprobamos co caracter literal
+    u32* sig = NULL;
+    try_char(c, true);
+
+    // Se non hai transición definida, buscamos clases de caracteres
+    try_char(TRANS_LETRA, isalpha(c));
+    try_char(TRANS_DIXITO, isdigit(c));
+    try_char(TRANS_ESPAZO, isspace(c));
+
+    try_char(TRANS_SHORTSTRING_DOUBLE, c != '\\' && c != '"' && c != '\n');
+    try_char(TRANS_SHORTSTRING_SINGLE, c != '\\' && c != '\'' && c != '\n');
+
+    try_char(TRANS_ANY, c != '\\');
+
+    // Se non se atopa nada devolvemos null
+    return NULL;
 }
 
 // Representa o autómata en formato graphviz
@@ -162,8 +175,9 @@ void afd_graph(const AFD* a, FILE* f) {
 
     vec_for_each((*a), e, {
         hash_for_each(e.trans, t, {
-            fprintf(f, "    %u -> %u [ label = \"%c\" ];\n", e.hash,
-                    a->data[t->value].hash, t->key);
+            fprintf(f, "    %u -> %u [ label = \"%c%c%c\" ];\n", e.hash,
+                    a->data[t->value].hash, t->key < TRANS_NONE ? '\\' : t->key,
+                    t->key < TRANS_NONE ? '\\' : ' ', trans_char(t->key));
         });
     });
 

@@ -75,6 +75,42 @@
 #define u32 uint32_t
 #define u64 uint64_t
 
+#define Trans i8
+
+// ··········
+// Caracteres
+// ··········
+
+#define TRANS_NONE -1
+#define TRANS_EPSILON -2
+#define TRANS_LETRA -3
+#define TRANS_DIXITO -4
+#define TRANS_ESPAZO -5
+#define TRANS_ANY -6
+#define TRANS_SHORTSTRING_DOUBLE -7
+#define TRANS_SHORTSTRING_SINGLE -8
+
+static inline Trans trans_char(Trans ch) {
+    switch (ch) {
+    case TRANS_EPSILON:
+        return 'e';
+    case TRANS_LETRA:
+        return 'w';
+    case TRANS_DIXITO:
+        return 'd';
+    case TRANS_ESPAZO:
+        return 's';
+    case TRANS_ANY:
+        return '.';
+    case TRANS_SHORTSTRING_DOUBLE:
+        return '"';
+    case TRANS_SHORTSTRING_SINGLE:
+        return '\'';
+    default:
+        return ' ';
+    }
+}
+
 // ··········
 // Utilidades
 // ··········

@@ -16,13 +16,6 @@
 #include "../tipos/str.h"
 #include "../tipos/vec.h"
 
-// Caracteres especiais para marcar transicións
-#define TRANS_NONE 1
-#define TRANS_EPSILON 2
-#define TRANS_LETRA 3 // TODO: Engadir soporte para clases
-#define TRANS_DIXITO 4
-typedef u8 Trans;
-
 // Representa un estado do autómata
 // Pode ter 0, 1 ou dúas transicións (marcadas por TRANS_NONE)
 typedef struct Estado Estado;
@@ -43,7 +36,7 @@ typedef struct {
 // O autómata finito máis pequeno
 // Recoñece un caracter c e transiciona ó estado final
 //      @param c: Caracter
-AFN afn_atomic(char c);
+AFN afn_atomic(Trans c);
 
 // Concatenación (ab)
 //      @param a: Primeiro estado

@@ -10,6 +10,9 @@ all: $(TARGET)
 debug: CFLAGS += -DDEBUG
 debug: $(TARGET)
 
+trace: CFLAGS += -DDEBUG_TRACE -DDEBUG
+trace: $(TARGET)
+
 $(TARGET): $(SRC)
 	@ mkdir -p $(DST)
 	@ $(CC) $(CFLAGS) -o $(DST)/$(TARGET) $(SRC) -I $(INCLUDE)

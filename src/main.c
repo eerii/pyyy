@@ -53,7 +53,6 @@ i32 main() {
             break;
         // ...
     }
-    info("fin de arquivo\n");
 
     info("tam arena: %lu/%lu\n", arena_len(arena), arena_cap(arena));
     Tumba* t = arena.eliminados;
@@ -67,7 +66,7 @@ i32 main() {
     }
     printf("\n");
     info("total: %u, tam: %u\n", num_tumbas, tam_tumbas);
-    info("arena ocupada real: %u\n", (u32)arena_len(arena) - tam_tumbas);
+    info("arena ocupada real: %u\n\n", (u32)arena_len(arena) - tam_tumbas);
 
     arena_free(&arena);
     return 0;

@@ -40,15 +40,15 @@ static inline bool centinela_init(Centinela* c, const char* nome) {
     // Abrimos o arquivo
     c->arquivo = fopen(nome, "r");
     if (c->arquivo == NULL) {
-        err("non se puido abrir o arquivo '%s'\n", nome);
+        err("non se puido abrir o arquivo '%s'\n\n", nome);
         return false;
     }
-    dbg("abriuse o arquivo %s\n", nome);
+    dbg("abriuse o arquivo %s\n\n", nome);
 
     return true;
 }
 
-#ifdef DEBUG
+#ifdef DEBUG_TRACE
 // Imprime o estado do buffer dun centinela
 // Utiliza subliñado para amosar inicio (azul) e actual(verde)
 //      @param c: Centinela
@@ -81,11 +81,13 @@ static inline void centinela_dbg(Centinela* c, const char* s) {
 //      @param i: Bloque a cargar (0 ou 1)
 //      @param f: Arquivo
 static inline void centinela_cargar(Centinela* c, u8 i) {
-    dbg("cargouse o bloque %d do centinela\n", i);
+#ifdef DEBUG_TRACE
+    dbg("cargouse o bloque %d do centinela\n\n", i);
+#endif
 
     u32 res = fread(c->datos + TAM_MAX * i + i, 1, TAM_MAX, c->arquivo);
     if (res < TAM_MAX) {
-        dbg("lendo o final do arquivo\n");
+        dbg("lendo o final do arquivo\n\n");
         c->datos[TAM_MAX * i + i + res] = '\0';
     }
 }
