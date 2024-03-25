@@ -224,15 +224,13 @@ Lexema seguinte_lexico() {
                                 tipo = OP_PLUS_EQ;
                                 break;
                             default:
-                                err("lexico: operador .= incorrecto");
+                                tipo = '=';
                             }
                         } else if (ch == '*') {
-                            if (key.len == 1) {
-                                tipo = '*';
-                            } else if (key.data[0] == '*') {
+                            if (key.data[0] == '*') {
                                 tipo = OP_STAR_STAR;
                             } else {
-                                err("lexico: operador ** incorrecto");
+                                tipo = '*';
                             }
                         } else {
                             tipo = ch;
