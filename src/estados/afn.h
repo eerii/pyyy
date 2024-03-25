@@ -6,11 +6,6 @@
 //      - https://en.wikipedia.org/wiki/Thompson%27s_construction
 //      - https://swtch.com/~rsc/regexp/regexp1.html
 
-// Gramática
-// letra = [a-zA-Z]
-// dixito = [0-9]
-// identificador = (letra|_)(letra|digito|_)*
-
 #pragma once
 
 #include "../tipos/str.h"

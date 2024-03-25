@@ -12,6 +12,10 @@
 // https://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html
 //
 // Usa a arena de memoria global
+//
+// Ademáis, se se inicializa un vector a partir dun literal, este non reserva
+// memoria dinámica ata que se aplica redimensionamento. Isto permite unha
+// interfaz común para tratar con memoria dinámica e estática moi útil.
 
 #pragma once
 
@@ -19,7 +23,17 @@
 
 #include "arena.h"
 
-#define RESERVA_POR_DEFECTO_VEC 2
+// Parámetros que controlan a política de reserva de memoria do vector
+// Modificar estes parámetros pode cambiar o balance memoria/procesamento do
+// programa, e pode ser moi útil para optimizalo en sistemas con poucos
+// recursos
+// A política por defecto é reservar memoria para 4 elementos e ir multiplicando
+// por dous a capacidade ata chegar a un lítite superior, a partir do cal crece
+// linealmente
+// Este é un bo balance para non ter que facer moitas recolocacións
+// De todas maneiras, é posible utilizar os métodos específicos para reservar x
+// cantidade de memoria explicitamente para maior eficiencia
+#define RESERVA_POR_DEFECTO_VEC 4
 #define FACTOR_CRECEMENTO_VEC(V) (V.cap < 8192 ? V.cap * 2 : V.cap + 8192)
 
 // Vector dinámico

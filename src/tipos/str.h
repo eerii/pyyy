@@ -44,6 +44,7 @@ static inline bool equals_str(Str a, Str b) {
 #define str_append(S, X) (vec_pop(S), vec_append(S, X))
 
 // Crea un Str dende un literal en linea
+// Non reserva memoria dinámica se non se cambia o tamaño
 //      @param l: Literal string
 #define str(l)                                                                 \
     (Str) { .len = (sizeof(l) / sizeof(l[0])), .data = (l) }

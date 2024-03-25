@@ -1,5 +1,6 @@
+// Autómata finito determinado
+
 #include "afd.h"
-#include "afn.h"
 #include <ctype.h>
 
 // -----------------
@@ -134,9 +135,9 @@ AFD afn_to_afd(const AFN* a) {
 
 #define try_char(T, C)                                                         \
     if (C) {                                                                   \
-        auto sig = *hash_ins(actual->trans, T, NULL);                                \
+        auto sig = *hash_ins(actual->trans, T, NULL);                          \
         if (sig)                                                               \
-            return &a->data[sig->value];                                             \
+            return &a->data[sig->value];                                       \
     }
 
 // Calcula unha transición de estado
@@ -178,11 +179,22 @@ void afd_graph(const AFD* a, FILE* f) {
     });
 
     vec_for_each((*a), e, {
-        hash_for_each(e.trans, t, {
-            fprintf(f, "    %u -> %u [ label = \"%c%c%c\" ];\n", e.hash,
-                    a->data[t->value].hash, t->key < TRANS_NONE ? '\\' : t->key,
-                    t->key < TRANS_NONE ? '\\' : ' ', trans_char(t->key));
-        });
+        hash_for_each(e.trans, t, ({
+                          char label[5] = {t->key, '\0', '\0', '\0', '\0'};
+                          if (t->key < TRANS_NONE) {
+                              label[0] = '\\';
+                              label[1] = '\\';
+                              char tr = trans_char(t->key);
+                              label[2] = tr == '"' ? '\\' : tr;
+                              label[3] = tr == '"' ? '"' : '\0';
+                          }
+                          if (t->key == '"') {
+                              label[0] = '\\';
+                              label[1] = '"';
+                          }
+                          fprintf(f, "    %u -> %u [ label = \"%s\" ];\n",
+                                  e.hash, a->data[t->value].hash, label);
+                      }));
     });
 
     fprintf(f, "    node [shape = none label=\"\"]; start\n"); /* start mark */

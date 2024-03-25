@@ -18,16 +18,14 @@
 
 #include "../definicions.h"
 
-// TODO: Crear arena_move usando memmove para redimensionar sen deixar tumba
-
-// TODO: Mover estos dous parametros a init para facela configurable
-//          Permitir subarenas?
-//          Poden funcionar coma un push inverso (en plan vanse asignando dende
-//          o final) Deben de quitarse en orde de stack (a última primeiro)
-//          Permite crecer na arena principal, permite crecer na subarena
-//          (dentro do límite), permite engadir novas arenas
+// No futuro:
+//      - Permitir subarenas para xestionar scopes do programa
+//      - Mellorar a configuración dos parámetros
+//      - Mellorar a defragmentación das tumbas
 
 // Tamaño e número máximo de páxinas
+// Se traballamos con equipos con pouca memoria poden facerse páxinas aún máis
+// pequenas, controlando ó máximo as asignacións de memoria
 #define CHUNK ((u64)1 << 17)      // 16kb
 #define MAX_BLOCKS ((u64)1 << 16) // 1gb*
 // NOTA: Pode configurarse moito máis alto, xa que só reservamos direccións de
@@ -172,8 +170,6 @@ static inline u8* arena_pop(Arena* a, u64 n) {
 //      @param p: Punteiro da dirección na que empezar
 //      @param n: Cantidade de memoria a eliminar
 static inline void arena_del(Arena* a, u8* p, u32 n) {
-    // TODO: Mellor defragmentación
-
     // Se o espazo libre é menor que o tamaño dunha tumba, aceptamos perdelo
     if ((u64)n < sizeof(Tumba)) {
         return;
@@ -237,4 +233,22 @@ static inline void arena_clear(Arena* a) { a->actual = a->inicio; }
 static inline void arena_free(Arena* a) {
     munmap(a->inicio, CHUNK * MAX_BLOCKS);
     dbg("arena liberada en %p\n\n", a->inicio);
+}
+
+// Imprime detalles sobre a ocupación da arena de memoria
+//      @param a: Arena de memoria
+static inline void arena_print(Arena* a) {
+    info("tam arena: %lu/%lu\n", arena_len(arena), arena_cap(arena));
+    Tumba* t = arena.eliminados;
+    u32 num_tumbas = 0;
+    u32 tam_tumbas = 0;
+    info("tumbas:");
+    while (t) {
+        printf("%u:%u,", num_tumbas++, t->tam);
+        tam_tumbas += t->tam;
+        t = t->sig;
+    }
+    printf("\n");
+    info("total: %u, tam: %u\n", num_tumbas, tam_tumbas);
+    info("arena ocupada real: %u\n\n", (u32)arena_len(arena) - tam_tumbas);
 }

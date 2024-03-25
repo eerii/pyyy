@@ -1,3 +1,5 @@
+// Autómata finito non determinado
+
 #include "afn.h"
 #include "../tipos/arena.h"
 

@@ -1,3 +1,5 @@
+// Convertir regex a AFN
+
 #include "regex.h"
 
 // -----------------

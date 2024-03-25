@@ -1,3 +1,8 @@
+// Abstracción da tábla de símbolos
+// Utiliza hash tree por debaixo
+
+#pragma once
+
 #include "lexico.h"
 #include "tipos/hash.h"
 #include "tipos/str.h"

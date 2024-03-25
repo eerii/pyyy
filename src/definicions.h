@@ -127,7 +127,7 @@ static inline Trans trans_char(Trans ch) {
 }
 
 // Tamaño máximo do lexema (limitado polos buffers de entrada e saída)
-#define MAX_BUF_LEN 32
+#define TAM_MAX 64
 
 // ··········
 // Utilidades
@@ -141,6 +141,7 @@ static inline Trans trans_char(Trans ch) {
 #define C_BLUE "\x1b[34m"
 #define C_MAGENTA "\x1b[35m"
 #define C_CYAN "\x1b[36m"
+#define C_BLACK "\x1b[30m"
 #define C_BOLD "\x1b[1m"
 #define C_UNDERLINE "\x1b[4m"
 
@@ -153,12 +154,28 @@ static inline Trans trans_char(Trans ch) {
     PRINT_I##__VA_OPT__(I)(COLOR, FMT __VA_OPT__(, ) __VA_ARGS__)
 
 #ifdef DEBUG
-#define dbg(FMT, ...) print(C_YELLOW, FMT, __VA_ARGS__)
+#define dbg(FMT, ...)                                                          \
+    print(C_YELLOW, C_YELLOW "debug: " C_RESET FMT, __VA_ARGS__)
 #else
 #define dbg(...)
 #endif
-#define info(FMT, ...) print(C_BLUE, FMT, __VA_ARGS__)
-#define err(FMT, ...) print(C_RED, FMT, __VA_ARGS__)
+#define info(FMT, ...) print(C_BLUE, C_BLUE "info: " C_RESET FMT, __VA_ARGS__)
+#define err(FMT, ...) print(C_RED, C_RED "error: " C_RESET FMT, __VA_ARGS__)
+
+// Obtén o código de cor asociado a cada tipo de lexema
+static inline char* cor_lexema(u16 tipo) {
+    char* cor;
+    if (tipo < 290) { // Outros caracteres
+        cor = C_MAGENTA;
+    } else if (tipo < 300) { // Lexico base
+        cor = tipo == ID ? C_CYAN : C_GREEN;
+    } else if (tipo < 450) { // Palabras clave
+        cor = C_BLUE;
+    } else { // Operadores
+        cor = C_YELLOW;
+    }
+    return cor;
+}
 
 // Macro que compara dous valores (pasados como referencia)
 #define EQ(A, B) (*A == *B)

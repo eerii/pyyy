@@ -12,11 +12,14 @@
 
 #include "arena.h"
 
+// No futuro:
+//      - Cambiar os punteiros `child` do hashmap (64 bits) por enteiros u32
+//        Isto permite aforrar a metade de memoria por cada elemento do hashmap
+
 // Hashmap dinámico
 // É recomendable facer un typedef co tipo que se vaia a utilizar para que o
 // compilador entenda que múltiples instancias son do mesmo tipo e poder
 // utilizalo como parámetro en funcións convencionais
-// TODO: Probar a facer punteiros u32
 #define _HashTree(K, V, N)                                                     \
     struct N {                                                                 \
         struct N* child[4];                                                    \
@@ -29,6 +32,10 @@
 #define HashTree(K, V, ...)                                                    \
     __VA_OPT__(_HashTree(K, V, _Hash##__VA_ARGS))                              \
     IF_NOT(__VA_OPT__(1), _HashTree_0(K, V))
+
+// -------------
+// Funcións hash
+// -------------
 
 // Función hash para tipos de 64 bits
 //      @param key: Chave a hashear
@@ -77,6 +84,10 @@ static inline u64 hash_8(u8 key) { return (u64)key; }
         u32: hash_32,                                                          \
         u64: hash_64)(K)
 
+// ---------------
+// Funcións equals
+// ---------------
+
 // Funcións de comparación para tipos básicos
 #define _equals(T)                                                             \
     static inline bool equals_##T(T a, T b) { return a == b; }
@@ -102,19 +113,25 @@ _equals(u64);
         u32: equals_u32,                                                       \
         u64: equals_u64)(A, B)
 
+// ---
+// API
+// ---
+
 // Modifica ou inserta unha chave no hashmap
 // Se non se pasa arena, é un lookup simple e devolve NULL se non se atopa
 //
 // Xeramos un hash a partir da chave indicada
 // Usamos dous bits da chave hash para elexir unha das catro ramas
 // En cada nivel, dous bits son shifteados (trie of hash bits)
-// Se atopa o elemento, devolve o valor, se non, sigue buscando
+// Se atopa o elemento, devolve o nodo, se non, sigue buscando
 //
 // Se non se proporciona unha arena e non se atopa un elemento, devolve NULL
 // Se si hai, crea un novo hashmap usando a arena e asigna o valor da chave
 //      @param H: Árbore hash
 //      @param K: Chave a engadir ou modificar
 //      @param A: Arena de memoria na que ubicar o hashmap (pode ser NULL)
+//      @return: Punteiro ó nodo do hashmap, pódese acceder á chave con
+//               (*hm)->key e ó valor con (*hm)->value
 #define hash_ins(H, K, A)                                                      \
     ({                                                                         \
         typeof(H)* hm = &H;                                                    \
@@ -132,6 +149,7 @@ _equals(u64);
     })
 
 // Percorre o hashmap executando unha función para cada elemento
+// Utiliza unha pila para facer o percorrido (a alternativa era recursividade)
 //      @param H: Hashmap a percorrer
 //      @param VAR: Variável auxiliar na que se garda o valor de cada elemento
 //      @param DO: Código a executar

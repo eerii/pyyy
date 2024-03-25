@@ -1,6 +1,8 @@
+// Módulo do analizador léxico
+
 #pragma once
 
-#include "tipos/centinela.h"
+#include "entrada.h"
 
 // Valor que devolve o analizador léxico
 // O código é o tipo de lexema que é (ver definicions.h)
@@ -15,6 +17,5 @@ typedef struct {
 void automatas_init();
 
 // Devolve o seguinte lexema no analizador léxico
-//      @param a: Sistema de entrada
 //      @return: Seguinte lexema
-Lexema seguinte_lexico(Centinela* a);
+Lexema seguinte_lexico();
