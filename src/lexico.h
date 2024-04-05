@@ -1,8 +1,6 @@
-// Módulo do analizador léxico
-
 #pragma once
 
-#include "entrada.h"
+#include "tipos/str.h"
 
 // Valor que devolve o analizador léxico
 // O código é o tipo de lexema que é (ver definicions.h)
@@ -13,9 +11,12 @@ typedef struct {
     Str* valor;
 } Lexema;
 
-// Inicia os autómatas a partir de expresións regulares no analizador léxico
-void automatas_init();
+// Inicializa o sistema de entrada co arquivo indicado
+//      @param nome: Nome do arquivo a abrir
+void entrada_init(const char* nome);
+
+// Cerra o arquivo do sistema de entrada
+void entrada_close();
 
 // Devolve o seguinte lexema no analizador léxico
-//      @return: Seguinte lexema
 Lexema seguinte_lexico();

@@ -35,7 +35,10 @@ static inline void ts_ins(Str key, u16 val, Lexema* l) {
 static inline void ts_print() {
 #ifdef DEBUG
     dbg("-------ts-------\n");
-    hash_for_each(ts, h, { dbg("%s %d\n", h->key.data, h->value); });
+    hash_for_each(ts, h, {
+        if (h->value == ID || (h->value >= 300 && h->value < 450))
+            dbg("%s %d\n", h->key.data, h->value);
+    });
     dbg("----------------\n\n");
 #endif
 }

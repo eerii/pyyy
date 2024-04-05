@@ -59,12 +59,16 @@
 #define UNDERSCORE 403
 
 // Operadores e delimitadores (usamos ASCII menos para os dobres, 450+)
-#define OP_EQ 450
-#define OP_NEQ 451
-#define OP_LEQ 452
-#define OP_GEQ 453
-#define OP_STAR_STAR 454
+#define OP_SOME_EQ 450
+#define OP_EQ 451
+#define OP_NEQ 452
+#define OP_LEQ 453
+#define OP_GEQ 454
 #define OP_PLUS_EQ 455
+#define OP_MINUS_EQ 456
+#define OP_STAR_EQ 457
+#define OP_DIV_EQ 458
+#define OP_STAR_STAR 459
 
 // Espazos en blanco *non* son tokens
 
