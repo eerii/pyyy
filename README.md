@@ -3,6 +3,7 @@
 un pequeno analizador léxico de python.
 restrinxe a especificación ó atopado no arquivo `wilcoxon.py`.
 utiliza autómatas formais baseados en expresións regulares para definir as regras léxicas.
+para ver unha versión utilizando [flex](https://github.com/westes/flex) ir á [rama alternativa](https://github.com/eerii/pyyy/tree/flex).
 
 ## uso
 
