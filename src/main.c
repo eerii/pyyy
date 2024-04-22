@@ -41,7 +41,7 @@ i32 main(int argc, char* argv[]) {
     // Inicializamos os subsistemas
     arena_init(&arena);
     ts_init();
-    entrada_init(argc > 1 ? argv[0] : "wilcoxon.py");
+    entrada_init(argc > 1 ? argv[1] : "wilcoxon.py");
 
     // Obtemos os tokens léxicos e os representamos
     info("análise léxico:\n\n");
@@ -60,6 +60,7 @@ i32 main(int argc, char* argv[]) {
 
     // Todas as alocacións do programa están feitas na arena de memoria
     // Por iso limpar a memoria é moi sinxelo e pode facerse cun só comando
+    entrada_close();
     arena_free(&arena);
     return 0;
 }

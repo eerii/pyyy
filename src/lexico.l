@@ -79,6 +79,7 @@ void entrada_init(const char* nome){
 // Cerra o arquivo do sistema de entrada
 void entrada_close(){
     fclose(yyin);
+    yylex_destroy();
 }
 
 // Arrega os operadores dobres
