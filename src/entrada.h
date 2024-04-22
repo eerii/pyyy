@@ -31,3 +31,6 @@ static inline void entrada_inicio() { centinela_inicio(&entrada); }
 // Obtén a cadea de caracteres representada actualmente no sistema de entrada
 //      @param s: Cadea de caracteres
 static inline void entrada_str(Str* s) { centinela_str(&entrada, s); }
+
+// Cerramos o sistema de entrada
+static inline void entrada_cerrar() { fclose(entrada.arquivo); }
