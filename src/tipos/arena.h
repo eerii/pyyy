@@ -238,17 +238,19 @@ static inline void arena_free(Arena* a) {
 // Imprime detalles sobre a ocupación da arena de memoria
 //      @param a: Arena de memoria
 static inline void arena_print(Arena* a) {
-    info("tam arena: %lu/%lu\n", arena_len(arena), arena_cap(arena));
+#ifdef DEBUG
+    dbg("tam arena: %lu/%lu\n", arena_len(arena), arena_cap(arena));
     Tumba* t = arena.eliminados;
     u32 num_tumbas = 0;
     u32 tam_tumbas = 0;
-    info("tumbas:");
+    dbg("tumbas:");
     while (t) {
         printf("%u:%u,", num_tumbas++, t->tam);
         tam_tumbas += t->tam;
         t = t->sig;
     }
     printf("\n");
-    info("total: %u, tam: %u\n", num_tumbas, tam_tumbas);
-    info("arena ocupada real: %u\n\n", (u32)arena_len(arena) - tam_tumbas);
+    dbg("total: %u, tam: %u\n", num_tumbas, tam_tumbas);
+    dbg("arena ocupada real: %u\n\n", (u32)arena_len(arena) - tam_tumbas);
+#endif
 }

@@ -1,15 +1,22 @@
 # Para ver información sobre a utilización ver `src/main.c`
 
-LEX = flex
-LFLAGS =
 CFLAGS = -lfl -std=c2x
 DIRS = src
 DST = bin
-TARGET = practica_02
+TARGET = practica_03
+
+LEX = flex
+LFLAGS =
 SRC_LEX = $(foreach d, $(DIRS), $(wildcard $(d)/*.l))
-OUT_FLEX = $(patsubst $(DIRS)/%.l, $(DST)/flex/%.yy.c, $(SRC_LEX))
-SRC = $(OUT_FLEX) $(foreach d, $(DIRS), $(wildcard $(d)/*.c))
-INCLUDE = src
+OUT_LEX = $(patsubst $(DIRS)/%.l, $(DST)/%.yy.c, $(SRC_LEX))
+
+SIN = bison
+SFLAGS = -Wnone -d
+SRC_BISON = $(foreach d, $(DIRS), $(wildcard $(d)/*.y))
+OUT_BISON = $(patsubst $(DIRS)/%.y, $(DST)/%.tab.c, $(SRC_BISON))
+
+SRC = $(OUT_LEX) $(OUT_BISON) $(foreach d, $(DIRS), $(wildcard $(d)/*.c))
+INCLUDE = -I$(DIRS) -I$(DST)
 
 all: $(TARGET)
 
@@ -23,16 +30,18 @@ run: $(TARGET)
 
 $(TARGET): $(SRC)
 	@ mkdir -p $(DST)
-	@ $(CC) $(CFLAGS) -o $(DST)/$(TARGET) $(SRC) -I $(INCLUDE)
+	@ $(CC) $(CFLAGS) -o $(DST)/$(TARGET) $(SRC) $(INCLUDE)
 
-# Utiliza flex para convertir os arquivos lex en src/*.l en arquivos c en bin/flex/*.yy.c
-$(DST)/flex/%.yy.c: $(DIRS)/%.l
-	@ mkdir -p $(DST)/flex
-	@ $(LEX) -o $@ $(LFLAGS) $<
+# Utiliza flex para convertir os arquivos en src/*.l en arquivos c en bin/*.yy.c
+$(DST)/%.yy.c: $(DIRS)/%.l
+	@ mkdir -p $(DST)
+	@ $(LEX) -o $@ --header-file=$(DST)/$*.yy.h $(LFLAGS) $<
 
-$(DST)/flex/%.yy.h: $(DIRS)/%.l
-	@ mkdir -p $(DST)/flex
-	@ $(LEX) -o $@ $(LFLAGS) $<
+# Utiliza bison para convertir os arquivos en src/*.y en arquivos c en bin/*.tab.c
+$(DST)/%.tab.c: $(DIRS)/%.y
+	@ mkdir -p $(DST)
+	@ $(SIN) -o $@ --header=$(DST)/$*.tab.h $(SFLAGS) $<
+
 
 clean:
 	rm -f $(TARGET)

@@ -5,73 +5,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-// ······
-// Léxico
-// ······
-
-#define NEWLINE 290
-#define INDENT 291
-#define DEDENT 292
-#define ID 293
-#define LITERAL 294
-
-// Palabras clave (300+)
-#define AND 300
-#define AS 301
-#define ASSERT 302
-#define ASYNC 303
-#define AWAIT 304
-#define BREAK 305
-#define CLASS 306
-#define CONTINUE 307
-#define DEF 308
-#define DEL 309
-#define ELIF 310
-#define ELSE 311
-#define EXCEPT 312
-#define FALSE 313
-#define FINALLY 314
-#define FOR 315
-#define FROM 316
-#define GLOBAL 317
-#define IF 318
-#define IMPORT 319
-#define IN 320
-#define IS 321
-#define LAMBDA 322
-#define NONE 323
-#define NONLOCAL 324
-#define NOT 325
-#define OR 326
-#define PASS 327
-#define RAISE 328
-#define RETURN 329
-#define TRUE 330
-#define TRY 331
-#define WHILE 332
-#define WITH 333
-#define YIELD 334
-
-// Palabras clave lixeiras (400+)
-#define MATCH 400
-#define CASE 401
-#define TYPE 402
-#define UNDERSCORE 403
-
-// Operadores e delimitadores (usamos ASCII menos para os dobres, 450+)
-#define OP_SOME_EQ 450
-#define OP_EQ 451
-#define OP_NEQ 452
-#define OP_LEQ 453
-#define OP_GEQ 454
-#define OP_PLUS_EQ 455
-#define OP_MINUS_EQ 456
-#define OP_STAR_EQ 457
-#define OP_DIV_EQ 458
-#define OP_STAR_STAR 459
-
-// Espazos en blanco *non* son tokens
-
 // ·····
 // Tipos
 // ·····
@@ -86,53 +19,10 @@
 #define u32 uint32_t
 #define u64 uint64_t
 
+#define f32 float
+#define f64 double
+
 #define Trans i8
-
-// ··········
-// Caracteres
-// ··········
-
-#define TRANS_NONE -1
-#define TRANS_EPSILON -2
-#define TRANS_LETRA -3               // [a-zA-Z]
-#define TRANS_DIXITO -4              // [0-9]
-#define TRANS_DIXITO_NON_CERO -5     // [1-9]
-#define TRANS_DIXITO_OCTAL -6        // [0-7]
-#define TRANS_DIXITO_HEX -7          // [0-9a-fA-F]
-#define TRANS_ESPAZO -8              // isspace
-#define TRANS_ANY -9                 // .
-#define TRANS_SHORTSTRING_DOUBLE -10 // [^\n']
-#define TRANS_SHORTSTRING_SINGLE -11 // [^\n"]
-
-static inline Trans trans_char(Trans ch) {
-    switch (ch) {
-    case TRANS_EPSILON:
-        return 'e';
-    case TRANS_LETRA:
-        return 'w';
-    case TRANS_DIXITO:
-        return 'd';
-    case TRANS_DIXITO_NON_CERO:
-        return 'D';
-    case TRANS_DIXITO_OCTAL:
-        return 'o';
-    case TRANS_DIXITO_HEX:
-        return 'x';
-    case TRANS_ESPAZO:
-        return 's';
-    case TRANS_ANY:
-        return '.';
-    case TRANS_SHORTSTRING_DOUBLE:
-        return '"';
-    case TRANS_SHORTSTRING_SINGLE:
-        return '\'';
-    default:
-        return ' ';
-    }
-}
-
-// Tamaño máximo do lexema (limitado polos buffers de entrada e saída)
-#define TAM_MAX 64
 
 // ··········
 // Utilidades
@@ -166,21 +56,6 @@ static inline Trans trans_char(Trans ch) {
 #endif
 #define info(FMT, ...) print(C_BLUE, C_BLUE "info: " C_RESET FMT, __VA_ARGS__)
 #define err(FMT, ...) print(C_RED, C_RED "error: " C_RESET FMT, __VA_ARGS__)
-
-// Obtén o código de cor asociado a cada tipo de lexema
-static inline char* cor_lexema(u16 tipo) {
-    char* cor;
-    if (tipo < 290) { // Outros caracteres
-        cor = C_MAGENTA;
-    } else if (tipo < 300) { // Lexico base
-        cor = tipo == ID ? C_CYAN : C_GREEN;
-    } else if (tipo < 450) { // Palabras clave
-        cor = C_BLUE;
-    } else { // Operadores
-        cor = C_YELLOW;
-    }
-    return cor;
-}
 
 // Macro que compara dous valores (pasados como referencia)
 #define EQ(A, B) (*A == *B)

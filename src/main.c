@@ -29,7 +29,7 @@
 //      - Execución (imos pedindo o siguiente compoñente léxico ata o final)
 //      - Finalización (liberar toda a memoria, feito grazas á arena)
 
-#include "lexico.h"
+#include "sintactico.tab.h"
 #include "tipos/arena.h"
 #include "ts.h"
 
@@ -40,27 +40,21 @@ TaboaSimbolos* ts;
 i32 main(int argc, char* argv[]) {
     // Inicializamos os subsistemas
     arena_init(&arena);
-    ts_init();
-    entrada_init(argc > 1 ? argv[1] : "wilcoxon.py");
-
-    // Obtemos os tokens léxicos e os representamos
-    info("análise léxico:\n\n");
-    Lexema l;
-    while ((l = seguinte_lexico()).codigo) {
-        printf("%s%s (%d)\n" C_RESET, cor_lexema(l.codigo),
-               l.valor ? l.valor->data : "", l.codigo);
+    if (argc > 1) {
+        arquivo_init(argv[1]);
     }
-    printf("\n");
 
-    // Imprimir a táboa de símbolos
+    // Chama ó analizador
+    yyparse();
+
+    // Imprime a táboa de símbolos final
     ts_print();
 
-    // Imprimir detalles sobre o uso de memoria
+    // Imprime detalles sobre o uso de memoria
     arena_print(&arena);
 
     // Todas as alocacións do programa están feitas na arena de memoria
     // Por iso limpar a memoria é moi sinxelo e pode facerse cun só comando
-    entrada_close();
     arena_free(&arena);
     return 0;
 }
