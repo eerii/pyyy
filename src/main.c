@@ -1,34 +1,33 @@
-// https://docs.python.org/3/reference/lexical_analysis.html
-
-// ---------------------------
-// Analizador léxico de python
-// ---------------------------
+// ----------------------
+// Calculadora sintáctica
+// ----------------------
 
 // Uso:
-//      `make (debug) run (arquivo)`
+//      `make (debug) run`
 //      - `debug`: Activa a macro DEBUG e imprime mais diagnósticos
 //         Esto fai que o programa estea menos optimizado
-//      - `arquivo`: Indica o arquivo a analizar. Por defecto é wilcoxon.py
 
 // Estructura do código (dentro de `src`):
 //      - `definicions`: Arquivo cabeceira importado por todos os demais
 //                       Contén definicións de tipos, lexemas, funcións útiles
 //      - `ts`: Abstracción da taboa de símbolos, utiliza `hash`
+//      - `funcions`: Definicións das funcións do programa
 //      - `lexico`: Analizador léxico utilizando flex
+//      - `sintactico`: Analizador sintáctico utilizando bison
 //      - `tipos`: Tipos de datos abstractos
 //          - `arena`: Implementación dun alocador de arena. Xestiona toda a
 //                     memoria do programa e permite unha limpeza fácil.
 //          - `vec`: Lista dinámica xenérica
 //          - `str`: Cadea de caracteres implementada enriba de `vec`
 //          - `hash`: Árbore hash trie xenérica
-//          - `centinela`: Lista dobre centinela para o sistema de entrada
 
 // No main temos 3 fases
 //      - Inicialización (estructuras de datos como a taboa de simbolos,
-//        reservar memoria, cargar palabras reservadas)
+//        reservar memoria, cargar constantes)
 //      - Execución (imos pedindo o siguiente compoñente léxico ata o final)
 //      - Finalización (liberar toda a memoria, feito grazas á arena)
 
+#include "funcions.h"
 #include "sintactico.tab.h"
 #include "tipos/arena.h"
 #include "ts.h"
@@ -36,13 +35,17 @@
 // Definición das variables globais (declaradas en `definicions.h`)
 Arena arena;
 TaboaSimbolos* ts;
+TaboaFuncions* tf;
 
 i32 main(int argc, char* argv[]) {
     // Inicializamos os subsistemas
     arena_init(&arena);
-    if (argc > 1) {
-        arquivo_init(argv[1]);
-    }
+    ts_init();
+    tf_init();
+
+    printf("·······················\n" C_BLUE C_BOLD
+           "      calculadora\n" C_RESET "utiliza h() pra a axuda\n"
+           "·······················\n\n");
 
     // Chama ó analizador
     yyparse();

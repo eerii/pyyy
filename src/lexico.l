@@ -1,7 +1,6 @@
 %{
     // Importamos as librerías necesarias
     #include "definicions.h"
-    #include "lexico.h"
     #include "sintactico.tab.h"
     int fileno(FILE *stream);
 %}
@@ -12,51 +11,33 @@
 
 LINHA                   \n
 ESPAZO                  [ ]
-SEPARADOR               (\r|\t|{ESPAZO})+
+SEPARADOR               (\r|\t|;|{ESPAZO})+
 
 LETRA                   [a-zA-Z]
 DIXITO                  [0-9]
 ALNUM                   {LETRA}|{DIXITO}
 
-ID                      ({LETRA}|_)({ALNUM}|_)*
+ID                      ({LETRA}|_|:)({ALNUM}|_)*
 
 INTEGER                 {DIXITO}+
 FLOAT                   {DIXITO}*\.{DIXITO}+
 FLOAT_EXP               ({INTEGER}|{FLOAT})[eE][\+\-]?{INTEGER}
 NUMERO                  {INTEGER}|{FLOAT}|{FLOAT_EXP}
 
-OPERADOR                [\+\-\*\/%^=,.!<>();]
-
-ARQUIVO                 {ID}+(\.{ALNUM}+)?
-%x                      LER
+OPERADOR                [\+\-\*\/%^=,.!<>()]
 
 %%
 
-":q" {
-    arquivo_close();
+"q()" {
     yylex_destroy();
     yyterminate();
-}
-
-":l" {
-    BEGIN(LER);
-    return(CARGAR);
-}
-
-
-<LER>{ARQUIVO} {
-    yylval.cadena = str(yytext);
-    vec_push(yylval.cadena, '\0');
-    BEGIN(INITIAL);
-    return(ARQUIVO);
 }
 
 {SEPARADOR}
 {OPERADOR}|{LINHA}      return yytext[0];
 
 {ID} {
-    yylval.cadena = str(yytext);
-    vec_push(yylval.cadena, '\0');
+    yylval.cadena = str_(yytext);
     return(ID);
 }
 
@@ -69,26 +50,4 @@ ARQUIVO                 {ID}+(\.{ALNUM}+)?
 
 <<EOF>> {
     yyterminate();
-}
-
-%%
-
-bool ficheiro_aberto = false;
-
-// Abre o arquivo indicado
-void arquivo_init(const char* nome) {
-    ficheiro_aberto = (yyin = fopen(nome, "r")) != NULL;
-    if(!ficheiro_aberto) {
-        err("non se puido abrir o ficheiro\n\n");
-        yyin = stdin;
-    }
-}
-
-// Cerra o arquivo do sistema de entrada
-void arquivo_close() {
-    if (ficheiro_aberto) {
-        fclose(yyin);
-        yyrestart(stdin);
-        ficheiro_aberto = false;
-    }
 }

@@ -1,13 +1,12 @@
 %code requires {
     // Importamos as librerías necesarias
     #include "definicions.h"
-    #include "lexico.h"
     #include "ts.h"
+    #include "funcions.h"
 }
 
 %{
     #include "lexico.yy.h"
-    #include <math.h>
 
     // Función de erro sintáctico de bison
     void yyerror(const char *s);
@@ -56,9 +55,7 @@ linha:
         if (!isnan($1)) {
             pres("%lf\n", $1);
         }
-        if (!ficheiro_aberto) {
-            prompt(true);
-        }
+        prompt(true);
     }
     | error {
         prompt(false);
@@ -83,18 +80,17 @@ expr:
     | '(' expr ')' {
         $$ = $2;
     }
-    | CARGAR ARQUIVO {
-        info("executando arquivo %s\n", $2);
-        $$ = NAN;
-        arquivo_init($2.data);
-        vec_free($2);
-    }
 ;
 
 asign:
     ID '=' expr {
-        ts_ins($1, $3);
-        $$ = $3;
+        if (es_constante($1) && ts_get($1)) {
+            yyerror("non se pode modificar unha constante");
+            $$ = NAN;
+        } else {
+            ts_ins($1, $3);
+            $$ = $3;
+        }
     }
 ;
 
@@ -128,7 +124,36 @@ op:
 ;
 
 fn:
-    %empty {prompt(false);}
+    ID '(' ')' {
+        f64 (*f)() = fn_get($1, 0);
+        if (f != NULL) {
+            $$ = (*f)();
+        } else {
+            yyerror("funcion non recoñecida");
+            $$ = NAN;
+        }
+        vec_free($1);
+    }
+    | ID '(' expr ')' { 
+        f64 (*f)(f64) = fn_get($1, 1);
+        if (f != NULL) {
+            $$ = (*f)($3);
+        } else {
+            yyerror("funcion non recoñecida");
+            $$ = NAN;
+        }
+        vec_free($1);
+    }
+    | ID '(' expr expr ')' {
+        f64 (*f)(f64, f64) = fn_get($1, 2);
+        if (f != NULL) {
+            $$ = (*f)($3, $4);
+        } else {
+            yyerror("funcion non recoñecida");
+            $$ = NAN;
+        }
+        vec_free($1);
+    }
 ;
 
 %%

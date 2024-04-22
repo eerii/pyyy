@@ -48,3 +48,14 @@ static inline bool equals_str(Str a, Str b) {
 //      @param l: Literal string
 #define str(l)                                                                 \
     (Str) { .len = (sizeof(l) / sizeof(l[0])), .data = (l) }
+
+// Crea un Str dende un string non literal
+// Si reserva memoria dinámica
+//      @param l: String
+#define str_(l)                                                                \
+    ({                                                                         \
+        Str s = vec_new_res(Str, strlen(l) + 1);                               \
+        vec_append_n(s, l, strlen(l));                                         \
+        vec_push(s, '\0');                                                     \
+        s;                                                                     \
+    })

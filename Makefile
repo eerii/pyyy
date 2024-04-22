@@ -1,6 +1,6 @@
 # Para ver información sobre a utilización ver `src/main.c`
 
-CFLAGS = -lfl -std=c2x
+CFLAGS = -lfl -lm -std=c2x
 DIRS = src
 DST = bin
 TARGET = practica_03
