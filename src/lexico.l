@@ -45,26 +45,24 @@ ARQUIVO                 {ID}+(\.{ALNUM}+)?
 
 
 <LER>{ARQUIVO} {
-    /*yylval.cadena = (char *)malloc(strlen(yytext + 1));
-    strcpy(yylval.cadena, yytext);
-    yylval.cadena[strlen(yytext)] = '\0';
+    yylval.cadena = str(yytext);
+    vec_push(yylval.cadena, '\0');
     BEGIN(INITIAL);
-    return(ARCHIVO);*/
+    return(ARQUIVO);
 }
 
 {SEPARADOR}
 {OPERADOR}|{LINHA}      return yytext[0];
 
 {ID} {
-    /*yylval.cadena = (char*)malloc(strlen(yytext + 1) * sizeof(char));
-    strcpy(yylval.cadena, yytext);
-    yylval.cadena[strlen(yytext)] = '\0';
-    return(ID);*/
+    yylval.cadena = str(yytext);
+    vec_push(yylval.cadena, '\0');
+    return(ID);
 }
 
 {NUMERO} {
-    /*yylval.numero = atof(yytext);
-    return(NUMERO);*/
+    yylval.numero = atof(yytext);
+    return(NUMERO);
 }
 
 . err("erro léxico na liña %d", yylineno);

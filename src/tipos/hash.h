@@ -11,6 +11,7 @@
 #pragma once
 
 #include "arena.h"
+#include "tipos/str.h"
 
 // No futuro:
 //      - Cambiar os punteiros `child` do hashmap (64 bits) por enteiros u32
@@ -76,7 +77,7 @@ static inline u64 hash_8(u8 key) { return (u64)key; }
 //      @param K: Chave a hashear
 #define hash(K)                                                                \
     _Generic((K),                                                              \
-        Str: hash_str,                                                         \
+        Str: hash_str,                                                       \
         i8: hash_8,                                                            \
         i32: hash_32,                                                          \
         i64: hash_64,                                                          \

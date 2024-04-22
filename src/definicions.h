@@ -56,6 +56,8 @@
 #endif
 #define info(FMT, ...) print(C_BLUE, C_BLUE "info: " C_RESET FMT, __VA_ARGS__)
 #define err(FMT, ...) print(C_RED, C_RED "error: " C_RESET FMT, __VA_ARGS__)
+#define prompt(line) printf(C_BLUE "%s> " C_RESET, line ? "\n" : "")
+#define pres(FMT, ...) printf(C_YELLOW FMT C_RESET, __VA_ARGS__)
 
 // Macro que compara dous valores (pasados como referencia)
 #define EQ(A, B) (*A == *B)
